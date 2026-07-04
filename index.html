@@ -24,7 +24,17 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-he
 .lb{padding:4px 10px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
 .lb.active{background:var(--acc);color:#fff;font-weight:600}
 .lb:hover:not(.active){background:var(--brd);color:var(--txt)}
-.ctrl{background:var(--surface);border-bottom:1px solid var(--brd);padding:10px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:56px;z-index:20}
+.ctrl{background:var(--surface);border-bottom:1px solid var(--brd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:56px;z-index:20}
+.ctrl-row1{display:flex;gap:8px;align-items:center;width:100%}
+.flt-toggle{display:none;padding:6px 11px;border-radius:var(--r);border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;gap:5px;align-items:center}
+.flt-toggle:hover{border-color:var(--brd2);color:var(--txt)}
+.flt-toggle.has-active{border-color:var(--acc);color:#c9cdfb;background:var(--acc-dim)}
+.flt-body{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
+@media(max-width:700px){
+  .flt-toggle{display:flex}
+  .flt-body{display:none}
+  .flt-body.open{display:flex}
+}
 .sw{flex:1;min-width:200px;position:relative}
 .sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
 input.si{width:100%;padding:8px 10px 8px 34px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
@@ -143,10 +153,18 @@ input.si::placeholder{color:var(--muted)}
   </div>
 </div>
 <div class="ctrl">
-  <div class="sw">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input class="si" id="sq" oninput="render()">
+  <div class="ctrl-row1">
+    <div class="sw">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="si" id="sq" oninput="render()">
+    </div>
+    <button class="flt-toggle" id="flt-btn" onclick="toggleFilters()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+      Фильтры
+    </button>
+    <span class="cnt" id="cnt">—</span>
   </div>
+  <div class="flt-body" id="flt-body">
   <div class="fg">
     <span class="fl" id="lbl-l"></span>
     <div id="lc">
@@ -194,7 +212,7 @@ input.si::placeholder{color:var(--muted)}
     <option value="rating" id="so-r"></option>
     <option value="az" id="so-a"></option>
   </select>
-  <span class="cnt" id="cnt">—</span>
+  </div>
 </div>
 <div class="grid" id="grid"></div>
 <div class="empty" id="empty"><p id="etxt"></p></div>
@@ -303,12 +321,24 @@ function setF(type,el){
   document.querySelectorAll('#'+m[type]+' .chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   if(type==='l')lf=el.dataset.v;else if(type==='p')pf=el.dataset.v;else if(type==='d')df=el.dataset.v;else plf=el.dataset.v;
-  render();
+  updateFltBtn();render();
+}
+function toggleFilters(){
+  const b=document.getElementById('flt-body');
+  const btn=document.getElementById('flt-btn');
+  b.classList.toggle('open');
+  btn.textContent='';
+  const icon='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>';
+  btn.innerHTML=icon+(b.classList.contains('open')?' Скрыть':'  Фильтры');
+}
+function updateFltBtn(){
+  const hasActive=lf||pf||df||plf||xf;
+  document.getElementById('flt-btn')?.classList.toggle('has-active',!!hasActive);
 }
 function toggleX(el){
   xf=!xf;
   el.classList.toggle('active',xf);
-  render();
+  updateFltBtn();render();
 }
 function filtered(){
   const q=document.getElementById('sq').value.toLowerCase();
