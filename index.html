@@ -88,6 +88,42 @@ input.si::placeholder{color:var(--muted)}
   border:none;background:var(--acc);color:#fff;font-size:11px;cursor:pointer;
   font-family:'Inter',sans-serif}
 @keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* BGG pulse */
+@keyframes bgg-pulse{0%,100%{box-shadow:0 0 0 0 rgba(252,186,40,.5)}60%{box-shadow:0 0 0 7px rgba(252,186,40,0)}}
+.bgg-pulse{animation:bgg-pulse 1.4s ease infinite}
+
+/* Onboarding hint bubble */
+.hint-bubble{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--acc);border-radius:12px;padding:14px 16px;z-index:200;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadein .3s ease}
+.hint-bubble h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px}
+.hint-bubble p{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px}
+.hint-bubble p:last-of-type{margin-bottom:10px}
+.hint-bubble strong{color:var(--txt)}
+.hint-bubble button{padding:5px 14px;border-radius:6px;border:none;background:var(--acc);color:#fff;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* Modal overlay */
+#modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+#modal-ov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--brd);border-radius:var(--rl);max-width:420px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-cov{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.modal-close{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;backdrop-filter:blur(4px)}
+.modal-close:hover{background:rgba(0,0,0,.9)}
+.modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.modal-title{font-size:16px;font-weight:700;color:var(--txt);line-height:1.3}
+.modal-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.modal-price{font-family:'Inter',sans-serif;font-size:20px;font-weight:700;color:var(--grn)}
+.modal-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.modal-note{font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;padding:8px 10px;border:1px solid var(--brd);font-style:italic;line-height:1.5}
+.modal-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;width:100%}
+.modal-btn:hover{background:var(--acc-h)}
+.modal-bgg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.modal-bgg a{color:var(--acc);text-decoration:none}
+.modal-bgg a:hover{text-decoration:underline}
+
+/* Motivational quote card */
+.qcard{background:linear-gradient(135deg,var(--acc-dim),rgba(123,79,240,.1));border:1px solid rgba(88,101,242,.3);border-radius:var(--rl);padding:18px 16px;display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-start;grid-column:span 1}
+.qcard-text{font-size:13px;font-weight:500;color:var(--txt);line-height:1.5;font-style:italic}
+.qcard-sub{font-size:11px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -169,7 +205,39 @@ function setLang(l){
     b.classList.toggle('active',
       (l==='ru'&&b.textContent==='RU')||(l==='en'&&b.textContent==='EN')||(l==='hy'&&b.textContent==='ՀՅ'));
   });
-  applyTR();render();
+  let _rows=[];
+
+const QUOTES={
+  ru:[
+    {t:'Хорошая игра не должна пылиться на полке — она должна играться.',s:'Отдай в добрые руки'},
+    {t:'Каждая коробка — это чья-то будущая любимая партия.',s:'Дай ей шанс'},
+    {t:'Игра живёт, пока в неё играют. Передай дальше.',s:'Boardex.am'},
+    {t:'Освободи полку — кто-то уже мечтает об этой игре.',s:'Найди нового игрока'},
+    {t:'Лучший ход — отдать игру тем, кто будет её любить.',s:'Передай дальше'},
+  ],
+  en:[
+    {t:"A great game shouldn't collect dust — it should be played.",s:'Pass it on'},
+    {t:"Every box is someone's future favourite session.",s:'Give it a chance'},
+    {t:'Games live as long as they are played. Pass it forward.',s:'Boardex.am'},
+    {t:'Clear your shelf — someone is already dreaming of this game.',s:'Find a new player'},
+    {t:"The best move is giving a game to someone who'll love it.",s:'Pass it on'},
+  ],
+  hy:[
+    {t:'Լավ խաղը չպետք է փոշի հավաքի — այն պետք է խաղացվի։',s:'Փոխանցիր'},
+    {t:'Յուրաքանչյուր արկղ ինչ-որ մեկի ապագա սիրելի խաղն է։',s:'Տուր հնարավորություն'},
+    {t:'Խաղը ապրում է, քանի դեռ խաղում են։',s:'Boardex.am'},
+    {t:'Ազատիր դարակդ — մեկն արդեն երազում է այս խաղի մասին։',s:'Գտիր նոր խաղացող'},
+    {t:'Լավագույն քայլը խաղը սիրող ձեռքերին հանձնելն է։',s:'Փոխանցիր'},
+  ]
+};
+let _qIdx=0;
+function quoteCard(){
+  const q=QUOTES[lang]||QUOTES.ru;
+  const item=q[_qIdx%q.length];
+  _qIdx++;
+  return '<div class="qcard"><div class="qcard-text">«'+item.t+'»</div><div class="qcard-sub">'+item.sub+'— '+item.s+'</div></div>';
+}
+applyTR();render();
 }
 function applyTR(){
   const t=TR[lang];
@@ -267,7 +335,7 @@ function showHint(btn){
 }
 function fmtP(a,b){if(!a&&!b)return null;return a===b?`${a}`:`${a}–${b}`}
 function fmtT(a,b){if(!a&&!b)return null;const v=b||a;return v>=120?`${Math.round(v/60)}ч`:`${v}м`}
-function card(r){
+function card(r,idx){
   const b=BGG[r.t];
   const lc=r.l==='ENG'?'eng':r.l==='РУС'?'rus':'';
   const price=r.p?r.p.toLocaleString('ru')+' ֏':TR[lang].up;
@@ -292,7 +360,7 @@ function card(r){
   let genres='';
   if(b?.categories?.length)genres=`<div class="genres">${b.categories.slice(0,3).map(c=>`<span class="genre">${esc(c)}</span>`).join('')}</div>`;
   return `<div class="card">
-    <div class="cov">${cov}${badges}</div>
+    <div class="cov" onclick="openCard(${idx})" style="cursor:pointer">${cov}${badges}</div>
     <div class="cbody">
       <div class="ctitle">${esc(r.t)}</div>
       ${meta}${genres}
@@ -321,20 +389,139 @@ function render(){
   const g=document.getElementById('grid'),e=document.getElementById('empty');
   if(!rows.length){g.innerHTML='';e.style.display='block';return}
   e.style.display='none';
-  g.innerHTML=rows.map(r=>card(r)).join('');
+  _rows=rows;
+  _qIdx=0;
+  let html='';
+  rows.forEach((r,i)=>{
+    if(i>0&&i%9===0) html+=quoteCard();
+    html+=card(r,i);
+  });
+  g.innerHTML=html;
+}
+let _rows=[];
+
+const QUOTES={
+  ru:[
+    {t:'Хорошая игра не должна пылиться на полке — она должна играться.',s:'Отдай в добрые руки'},
+    {t:'Каждая коробка — это чья-то будущая любимая партия.',s:'Дай ей шанс'},
+    {t:'Игра живёт, пока в неё играют. Передай дальше.',s:'Boardex.am'},
+    {t:'Освободи полку — кто-то уже мечтает об этой игре.',s:'Найди нового игрока'},
+    {t:'Лучший ход — отдать игру тем, кто будет её любить.',s:'Передай дальше'},
+  ],
+  en:[
+    {t:"A great game shouldn't collect dust — it should be played.",s:'Pass it on'},
+    {t:"Every box is someone's future favourite session.",s:'Give it a chance'},
+    {t:'Games live as long as they are played. Pass it forward.',s:'Boardex.am'},
+    {t:'Clear your shelf — someone is already dreaming of this game.',s:'Find a new player'},
+    {t:"The best move is giving a game to someone who'll love it.",s:'Pass it on'},
+  ],
+  hy:[
+    {t:'Լավ խաղը չպետք է փոշի հավաքի — այն պետք է խաղացվի։',s:'Փոխանցիր'},
+    {t:'Յուրաքանչյուր արկղ ինչ-որ մեկի ապագա սիրելի խաղն է։',s:'Տուր հնարավորություն'},
+    {t:'Խաղը ապրում է, քանի դեռ խաղում են։',s:'Boardex.am'},
+    {t:'Ազատիր դարակդ — մեկն արդեն երազում է այս խաղի մասին։',s:'Գտիր նոր խաղացող'},
+    {t:'Լավագույն քայլը խաղը սիրող ձեռքերին հանձնելն է։',s:'Փոխանցիր'},
+  ]
+};
+let _qIdx=0;
+function quoteCard(){
+  const q=QUOTES[lang]||QUOTES.ru;
+  const item=q[_qIdx%q.length];
+  _qIdx++;
+  return '<div class="qcard"><div class="qcard-text">«'+item.t+'»</div><div class="qcard-sub">'+item.sub+'— '+item.s+'</div></div>';
 }
 applyTR();render();
 
-// BGG first-visit tooltip
+// Modal
+function openCard(i){
+  const r=_rows[i];
+  const b=BGG[r.t];
+  const ov=document.getElementById('modal-ov');
+  const img=document.getElementById('modal-img');
+  // cover
+  if(b?.bgg_id){
+    img.src='covers/'+b.bgg_id+'.webp';
+    img.onerror=function(){if(b.image){img.src=b.image;img.onerror=null;}};
+  } else { img.src=''; }
+  // title
+  document.getElementById('modal-title').textContent=r.t;
+  // meta
+  const price=r.p?r.p.toLocaleString('ru')+' ֏':'Цена не указана';
+  let meta='<span class="modal-price">'+price+'</span>';
+  document.getElementById('modal-meta').innerHTML=meta;
+  // tags row
+  let tags='';
+  if(r.l==='ENG') tags+='<span class="ltag eng">ENG</span>';
+  if(r.l==='РУС') tags+='<span class="ltag rus">РУС</span>';
+  if(b?.rating) tags+='<span class="rat-b" style="position:static;font-size:11px">★ '+b.rating+'</span>';
+  if(b?.min_players){
+    const pl=b.min_players===b.max_players?b.min_players+'':b.min_players+'–'+b.max_players;
+    tags+='<span class="mi" style="font-size:12px">👥 '+pl+'</span>';
+  }
+  if(b?.min_playtime){
+    const tm=b.max_playtime>=120?Math.round(b.max_playtime/60)+'ч':b.max_playtime+'м';
+    tags+='<span class="mi" style="font-size:12px">⏱ '+tm+'</span>';
+  }
+  document.getElementById('modal-tags').innerHTML=tags;
+  // note
+  const noteEl=document.getElementById('modal-note');
+  if(r.n){noteEl.textContent=r.n;noteEl.style.display='block';}
+  else{noteEl.style.display='none';}
+  // tg link
+  const tgEl=document.getElementById('modal-tg');
+  if(r.m){tgEl.href='https://t.me/used_boardgames_armenia/'+r.m;tgEl.style.display='flex';}
+  else{tgEl.style.display='none';}
+  // bgg link
+  const bggEl=document.getElementById('modal-bgg');
+  if(b?.bgg_url){bggEl.innerHTML='<a href="'+b.bgg_url+'" target="_blank" onclick="event.stopPropagation()">Подробнее на BoardGameGeek ↗</a>';}
+  else{bggEl.innerHTML='';}
+  ov.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modal-ov').classList.remove('open');
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// First-visit hint with BGG pulse
 (function(){
-  if(localStorage.getItem('bgg-tip')) return;
-  const d=document.createElement('div');
-  d.className='bgg-onboard';
-  d.innerHTML='<strong>⭐ Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek<br><button onclick="document.querySelector(\'.bgg-onboard\').remove()">Понятно</button>';
-  document.body.appendChild(d);
-  localStorage.setItem('bgg-tip','1');
-  setTimeout(()=>d.remove(),6000);
+  if(localStorage.getItem('bgg-tip2')) return;
+  setTimeout(function(){
+    document.querySelectorAll('.bgg-b').forEach(el=>el.classList.add('bgg-pulse'));
+    const d=document.createElement('div');
+    d.className='hint-bubble';
+    d.innerHTML='<h4>Пара подсказок 👇</h4><p><strong>Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek</p><p><strong>Найти продавца</strong> — напишем напрямую в Telegram</p><button onclick="dismissHint()">Понятно</button>';
+    document.body.appendChild(d);
+    window._hintTimer=setTimeout(()=>dismissHint(),8000);
+  },1200);
+  function dismissHint(){
+    clearTimeout(window._hintTimer);
+    document.querySelectorAll('.bgg-b').forEach(el=>el.classList.remove('bgg-pulse'));
+    const b=document.querySelector('.hint-bubble');
+    if(b)b.remove();
+    localStorage.setItem('bgg-tip2','1');
+  }
+  window.dismissHint=dismissHint;
 })();
 </script>
+
+<div id="modal-ov" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img class="modal-cov" id="modal-img" src="" alt="">
+    <div class="modal-body">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-meta" id="modal-meta"></div>
+      <div class="modal-row" id="modal-tags"></div>
+      <div class="modal-note" id="modal-note" style="display:none"></div>
+      <a class="modal-btn" id="modal-tg" href="#" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        Найти продавца в Telegram
+      </a>
+      <div class="modal-bgg" id="modal-bgg"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
