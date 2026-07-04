@@ -1,0 +1,108 @@
+{
+  "name": "Boardex — Auto-add listings",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:RunOnSchedule",
+      "version": 1,
+      "parameters": {},
+      "mapper": {},
+      "metadata": {"designer": {"x": 0, "y": 0}, "restore": {}}
+    },
+    {
+      "id": 2,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {"handleErrors": false, "useNewZLibDecompression": true},
+      "mapper": {
+        "url": "https://t.me/s/used_boardgames_armenia",
+        "method": "GET",
+        "headers": [{"name": "User-Agent", "value": "Mozilla/5.0 (compatible)"}],
+        "bodyType": "raw",
+        "parseResponse": false
+      },
+      "metadata": {"designer": {"x": 300, "y": 0}}
+    },
+    {
+      "id": 3,
+      "module": "openai-gpt-3:createCompletion",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "model": "gpt-4o-mini",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You extract board game sale listings from Telegram channel HTML. Return ONLY valid JSON array, no markdown. Each item must have: {\"title\": string, \"price\": number or null, \"lang\": \"ENG\" or \"РУС\", \"msg_id\": number, \"seller\": string, \"note\": string, \"is_selling\": boolean}. Only include posts from last 24 hours (check datetime attribute). Skip non-sale posts. For price: integer AMD. For msg_id: number from data-post attribute like 'used_boardgames_armenia/4916' → 4916. For seller: from class tgme_widget_message_from_author. If unclear title, set is_selling=false."
+          },
+          {
+            "role": "user",
+            "content": "{{2.data}}"
+          }
+        ],
+        "max_tokens": 2000,
+        "temperature": 0
+      },
+      "metadata": {"designer": {"x": 600, "y": 0}}
+    },
+    {
+      "id": 4,
+      "module": "builtin:BasicFeeder",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "array": "{{parseJSON(3.choices[].message.content)}}"
+      },
+      "metadata": {"designer": {"x": 900, "y": 0}}
+    },
+    {
+      "id": 5,
+      "module": "builtin:BasicFilter",
+      "version": 1,
+      "parameters": {},
+      "filter": {
+        "name": "Not blacklisted + is selling",
+        "conditions": [[
+          {"a": "{{lower(4.seller)}}", "b": "edshang", "o": "text:notcontain"},
+          {"a": "{{lower(4.seller)}}", "b": "ed", "o": "text:notequal"},
+          {"a": "{{4.is_selling}}", "b": "true", "o": "boolean:equal"},
+          {"a": "{{4.title}}", "b": "", "o": "text:notequal"}
+        ]]
+      },
+      "metadata": {"designer": {"x": 1200, "y": 0}}
+    },
+    {
+      "id": 6,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": {"handleErrors": false, "useNewZLibDecompression": true},
+      "mapper": {
+        "url": "https://api.github.com/repos/EyeAnton/nastolki-catalog/actions/workflows/add_game.yml/dispatches",
+        "method": "POST",
+        "headers": [
+          {"name": "Authorization", "value": "Bearer ВСТАВЬ_GITHUB_TOKEN_СЮДА"},
+          {"name": "Accept", "value": "application/vnd.github+json"},
+          {"name": "X-GitHub-Api-Version", "value": "2022-11-28"}
+        ],
+        "bodyType": "raw",
+        "contentType": "application/json",
+        "body": "{\"ref\":\"master\",\"inputs\":{\"title\":\"{{4.title}}\",\"price\":\"{{ifempty(4.price, 0)}}\",\"lang\":\"{{4.lang}}\",\"msg_id\":\"{{4.msg_id}}\",\"seller\":\"{{4.seller}}\",\"note\":\"{{4.note}}\"}}"
+      },
+      "metadata": {"designer": {"x": 1500, "y": 0}}
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    }
+  }
+}
