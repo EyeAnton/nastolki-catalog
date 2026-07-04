@@ -37,10 +37,10 @@ input.si::placeholder{color:var(--muted)}
 .chip:hover:not(.active){border-color:var(--brd2);color:var(--txt)}
 .ssel{padding:7px 10px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:12px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
 .cnt{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--acc-dim);color:#c9cdfb;padding:4px 10px;border-radius:20px;white-space:nowrap;border:1px solid rgba(88,101,242,.3);margin-left:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;padding:16px 20px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 16px}
 .card{background:var(--card);border:1px solid var(--brd);border-radius:var(--rl);overflow:hidden;display:flex;flex-direction:column;transition:transform .12s,border-color .15s,background .15s}
 .card:hover{transform:translateY(-2px);border-color:var(--brd2);background:var(--card-h)}
-.cov{position:relative;height:130px;background:var(--bg);overflow:hidden;flex-shrink:0}
+.cov{position:relative;aspect-ratio:1/1;background:var(--bg);overflow:hidden;flex-shrink:0}
 .cov-em{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(135deg,var(--surface),var(--bg))}
 .cov-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s}
 .cov-img.ok{opacity:1}
@@ -64,7 +64,7 @@ input.si::placeholder{color:var(--muted)}
 .tg-hint a:hover{text-decoration:underline}
 .tg-hint .gn{color:var(--txt);font-weight:600}
 .cfoot{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-top:1px solid var(--brd);background:rgba(0,0,0,.1);gap:8px}
-.price{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--grn)}
+.price{font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:var(--grn)}
 .price.unk{font-size:11px;color:var(--dim);font-weight:400;font-style:italic}
 .ftags{display:flex;gap:4px;align-items:center}
 .ltag{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
@@ -74,6 +74,17 @@ input.si::placeholder{color:var(--muted)}
 .empty{display:none;text-align:center;padding:80px 20px;color:var(--muted)}
 .pgft{padding:14px 20px;text-align:center;font-size:11px;color:var(--dim);border-top:1px solid var(--brd)}
 .pgft a{color:var(--acc);text-decoration:none}
+
+.bgg-onboard{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:#23272a;border:1px solid var(--acc);border-radius:10px;
+  padding:12px 18px;font-size:12px;color:var(--txt);z-index:100;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:280px;text-align:center;
+  animation:fadein .3s ease}
+.bgg-onboard strong{color:#fcba28}
+.bgg-onboard button{margin-top:8px;padding:4px 14px;border-radius:6px;
+  border:none;background:var(--acc);color:#fff;font-size:11px;cursor:pointer;
+  font-family:'Inter',sans-serif}
+@keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
@@ -144,8 +155,8 @@ input.si::placeholder{color:var(--muted)}
 
 <script>
 const TR={
-  ru:{sub:'Барахолка настольных игр в Армении',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
-  en:{sub:'Board game marketplace in Armenia',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Date',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
+  ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
+  en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
   hy:{sub:'Հայաստանի սեղանի խաղերի շուկա',si:'Որոնել...',ll:'Լեզու',lpl:'Խաղ.',lpr:'Գին',all:'Բոլ.',solo:'Սոլո',p2:'2 հոգի',p4:'մինչ 4',p6:'6+',pa:'Ցանկ.',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Նոր',sc:'Գին ↑',se:'Գին ↓',sr:'BGG',sa:'Ա–Ω',ld:'Ամս.',da:'Բոլ.',dw:'Շաբաթ',dm:'Ամիս',dy:'Տարի',to:'Բացել հայտարարությունը ↗',sb:'Գտնել →',sh:'Թաքցնել ↑',th:'Փնտրի',ti:'խոսակց.:',up:'հստ.',em:'Չի գտնվել',ft:'<a href="https://t.me/used_boardgames_armenia" target="_blank">Telegram</a> · <a href="https://boardgamegeek.com" target="_blank">BGG</a>'}
 };
 let lang='ru';
@@ -244,6 +255,8 @@ const EM=['🎲','♟️','🃏','🗺️','🏰','⚔️','🧙','🌍','🚀',
 function em(t){let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))%EM.length;return EM[Math.abs(h)]}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function showHint(btn){
+  const url=btn.dataset.url;
+  if(url){window.open(url,'_blank');return;}
   const h=btn.nextElementSibling;
   const open=h.style.display!=='block';
   h.style.display=open?'block':'none';
@@ -281,7 +294,7 @@ function card(r){
       <div class="ctitle">${esc(r.t)}</div>
       ${meta}${genres}
       ${r.n?`<div class="note-txt">${esc(r.n)}</div>`:''}
-      <div class="sell-btn" onclick="showHint(this)">
+      <div class="sell-btn" onclick="showHint(this)" ${r.m?'data-url="https://t.me/used_boardgames_armenia/'+r.m+'"':''} >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
         <span class="sb-txt">${t.sb}</span>
       </div>
@@ -308,6 +321,17 @@ function render(){
   g.innerHTML=rows.map(r=>card(r)).join('');
 }
 applyTR();render();
+
+// BGG first-visit tooltip
+(function(){
+  if(localStorage.getItem('bgg-tip')) return;
+  const d=document.createElement('div');
+  d.className='bgg-onboard';
+  d.innerHTML='<strong>⭐ Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek<br><button onclick="this.closest('.bgg-onboard').remove()">Понятно</button>';
+  document.body.appendChild(d);
+  localStorage.setItem('bgg-tip','1');
+  setTimeout(()=>d.remove(),6000);
+})();
 </script>
 </body>
 </html>
