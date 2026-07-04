@@ -93,13 +93,16 @@ input.si::placeholder{color:var(--muted)}
 @keyframes bgg-pulse{0%,100%{box-shadow:0 0 0 0 rgba(252,186,40,.5)}60%{box-shadow:0 0 0 7px rgba(252,186,40,0)}}
 .bgg-pulse{animation:bgg-pulse 1.4s ease infinite}
 
-/* Onboarding hint bubble */
-.hint-bubble{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--acc);border-radius:12px;padding:14px 16px;z-index:200;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadein .3s ease}
-.hint-bubble h4{font-size:12px;font-weight:700;color:var(--txt);margin-bottom:8px}
-.hint-bubble p{font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px}
-.hint-bubble p:last-of-type{margin-bottom:10px}
-.hint-bubble strong{color:var(--txt)}
-.hint-bubble button{padding:5px 14px;border-radius:6px;border:none;background:var(--acc);color:#fff;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
+/* Onboarding hint */
+.hint-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);animation:fadein .3s ease}
+.hint-bubble{background:var(--surface);border:1px solid var(--brd2);border-radius:16px;padding:24px;max-width:360px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.6)}
+.hint-bubble h4{font-size:20px;font-weight:700;color:var(--txt);margin-bottom:6px}
+.hint-sub{font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.hint-item{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--brd)}
+.hint-item-desc strong{color:var(--txt);display:block;font-size:14px;margin-bottom:3px}
+.hint-item-desc span{font-size:12px;color:var(--muted);line-height:1.4}
+.hint-ok{width:100%;margin-top:12px;padding:12px;border-radius:8px;border:none;background:var(--acc);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.hint-ok:hover{background:var(--acc-h)}
 
 /* Modal overlay */
 #modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
@@ -490,15 +493,30 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
   setTimeout(function(){
     document.querySelectorAll('.bgg-b').forEach(el=>el.classList.add('bgg-pulse'));
     const d=document.createElement('div');
-    d.className='hint-bubble';
-    d.innerHTML='<h4>Пара подсказок 👇</h4><p><strong>Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek</p><p><strong>Найти продавца</strong> — напишем напрямую в Telegram</p><button onclick="dismissHint()">Понятно</button>';
+    d.className='hint-ov';
+    d.innerHTML=`<div class="hint-bubble">
+<h4>Привет! 👋</h4>
+<div class="hint-sub">Добро пожаловать в Boardex.am — каталог б/у настолок в Армении. Вот что здесь есть:</div>
+<div class="hint-item">
+  <a class="bgg-b" style="position:static;flex-shrink:0;font-size:13px;padding:5px 10px" href="#" onclick="return false">BGG ↗</a>
+  <div class="hint-item-desc"><strong>Рейтинг BoardGameGeek</strong><span>Нажми — откроется страница игры с описанием, правилами и отзывами</span></div>
+</div>
+<div class="hint-item">
+  <div class="sell-btn" style="flex-shrink:0;pointer-events:none;font-size:12px">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+    <span>Найти продавца</span>
+  </div>
+  <div class="hint-item-desc"><strong>Найти продавца</strong><span>Откроет сообщение в Telegram — напиши продавцу напрямую</span></div>
+</div>
+<button class="hint-ok" onclick="dismissHint()">Всё понятно!</button>
+</div>`;
     document.body.appendChild(d);
     window._hintTimer=setTimeout(()=>dismissHint(),8000);
   },1200);
   function dismissHint(){
     clearTimeout(window._hintTimer);
     document.querySelectorAll('.bgg-b').forEach(el=>el.classList.remove('bgg-pulse'));
-    const b=document.querySelector('.hint-bubble');
+    const b=document.querySelector('.hint-ov');
     if(b)b.remove();
     localStorage.setItem('bgg-tip2','1');
   }
