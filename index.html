@@ -327,7 +327,7 @@ applyTR();render();
   if(localStorage.getItem('bgg-tip')) return;
   const d=document.createElement('div');
   d.className='bgg-onboard';
-  d.innerHTML='<strong>⭐ Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek<br><button onclick="this.closest('.bgg-onboard').remove()">Понятно</button>';
+  d.innerHTML='<strong>⭐ Рейтинг BGG</strong> — нажми, чтобы открыть страницу игры на BoardGameGeek<br><button onclick="document.querySelector(\'.bgg-onboard\').remove()">Понятно</button>';
   document.body.appendChild(d);
   localStorage.setItem('bgg-tip','1');
   setTimeout(()=>d.remove(),6000);
