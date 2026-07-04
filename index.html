@@ -73,6 +73,7 @@ input.si::placeholder{color:var(--muted)}
 .ltag{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
 .ltag.eng{background:var(--grn-dim);color:#57f287;border:1px solid rgba(87,242,135,.2)}
 .ltag.rus{background:var(--acc-dim);color:#c9cdfb;border:1px solid rgba(88,101,242,.2)}
+.xtag{background:rgba(240,178,50,.15);color:#f0b232;border:1px solid rgba(240,178,50,.3);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
 .dtag{font-size:10px;color:var(--dim)}
 .empty{display:none;text-align:center;padding:80px 20px;color:var(--muted)}
 .pgft{padding:14px 20px;text-align:center;font-size:11px;color:var(--dim);border-top:1px solid var(--brd)}
@@ -183,6 +184,9 @@ input.si::placeholder{color:var(--muted)}
       <button class="chip" data-v="y" onclick="setF('d',this)" id="fc-dy"></button>
     </div>
   </div>
+  <div class="fg">
+    <button class="chip" id="fc-x" onclick="toggleX(this)">⇄ <span id="lbl-x"></span></button>
+  </div>
   <select class="ssel" id="so" onchange="render()">
     <option value="new" id="so-n"></option>
     <option value="cheap" id="so-c"></option>
@@ -198,8 +202,8 @@ input.si::placeholder{color:var(--muted)}
 
 <script>
 const TR={
-  ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
-  en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
+  ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',lx:'Обмен',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
+  en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',lx:'Exchange',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>'},
   hy:{sub:'Հայաստանի սեղանի խաղերի շուկա',si:'Որոնել...',ll:'Լեզու',lpl:'Խաղ.',lpr:'Գին',all:'Բոլ.',solo:'Սոլո',p2:'2 հոգի',p4:'մինչ 4',p6:'6+',pa:'Ցանկ.',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Նոր',sc:'Գին ↑',se:'Գին ↓',sr:'BGG',sa:'Ա–Ω',ld:'Ամս.',da:'Բոլ.',dw:'Շաբաթ',dm:'Ամիս',dy:'Տարի',to:'Բացել հայտարարությունը ↗',sb:'Գտնել →',sh:'Թաքցնել ↑',th:'Փնտրի',ti:'խոսակց.:',up:'հստ.',em:'Չի գտնվել',ft:'<a href="https://t.me/used_boardgames_armenia" target="_blank">Telegram</a> · <a href="https://boardgamegeek.com" target="_blank">BGG</a>'}
 };
 let lang='ru';
@@ -257,6 +261,7 @@ function applyTR(){
   document.getElementById('fc-4p').textContent=t.p4;
   document.getElementById('fc-6p').textContent=t.p6;
   document.getElementById('lbl-d').textContent=t.ld;
+  document.getElementById('lbl-x').textContent=t.lx;
   document.getElementById('fc-da').textContent=t.da;
   document.getElementById('fc-dw').textContent=t.dw;
   document.getElementById('fc-dm').textContent=t.dm;
@@ -285,7 +290,7 @@ const D=[{"t":"Unmatched: Cobble and Fog","s":"Hrag Keshishian","p":8000,"l":"EN
 
 function pd(d){if(!d||d.length<=4)return d==='2026'?20260101:20250101;const[a,b,c]=d.split('.').map(Number);return c*10000+b*100+a}
 const items=D.map(x=>({...x,_d:pd(x.d)}));
-let lf='',pf='',plf='',df='';
+let lf='',pf='',plf='',df='',xf=false;
 function dCut(mode){
   const n=new Date();
   if(mode==='w')n.setDate(n.getDate()-7);
@@ -300,11 +305,17 @@ function setF(type,el){
   if(type==='l')lf=el.dataset.v;else if(type==='p')pf=el.dataset.v;else if(type==='d')df=el.dataset.v;else plf=el.dataset.v;
   render();
 }
+function toggleX(el){
+  xf=!xf;
+  el.classList.toggle('active',xf);
+  render();
+}
 function filtered(){
   const q=document.getElementById('sq').value.toLowerCase();
   const so=document.getElementById('so').value;
   let r=items.filter(x=>{
     if(q&&!x.t.toLowerCase().includes(q))return false;
+    if(xf&&!x.x)return false;
     if(lf&&x.l!==lf)return false;
     if(df&&x._d<dCut(df))return false;
     if(pf==='0'&&(x.p===null||x.p>=5000))return false;
@@ -381,6 +392,7 @@ function card(r,idx){
     <div class="cfoot">
       <span class="price ${pc}">${price}</span>
       <div class="ftags">
+        ${r.x?`<span class="xtag">⇄ обмен</span>`:''}
         ${lc?`<span class="ltag ${lc}">${r.l}</span>`:''}
         ${ds?`<span class="dtag">${ds}</span>`:''}
       </div>
