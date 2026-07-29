@@ -169,11 +169,12 @@ input.si::placeholder{color:var(--muted)}
 .calc-result{border-top:1px solid var(--brd);padding-top:16px;display:flex;flex-direction:column;gap:8px}
 .calc-result-num{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700}
 .calc-result-hint{font-size:13px;color:var(--txt);line-height:1.5}
-.calc-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.calc-bar-wrap{display:flex;flex-direction:column;gap:2px;margin-top:2px;padding-top:26px}
 .calc-bar-cap{font-size:11px;color:var(--dim)}
-.calc-bar{position:relative;height:10px;border-radius:6px;background:linear-gradient(to right,rgba(35,165,90,0),#23a55a);border:1px solid var(--brd)}
-.calc-bar-marker{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--bg);box-shadow:0 0 0 2px var(--acc);transform:translate(-50%,-50%);transition:left .4s cubic-bezier(.2,.8,.2,1)}
-.calc-bar-labels{display:flex;justify-content:flex-end;font-size:12px;color:var(--dim);font-weight:600;font-family:'JetBrains Mono',monospace}
+.calc-bar{position:relative;height:8px;border-radius:5px;background:linear-gradient(to right,rgba(35,165,90,0),#23a55a);border:1px solid var(--brd)}
+.calc-bar-marker{position:absolute;top:-24px;width:24px;height:24px;line-height:24px;text-align:center;font-size:17px;color:var(--txt);background:var(--card);border:1px solid var(--brd2);border-radius:50%;transform:translateX(-50%);transition:left .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.calc-bar-marker::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--brd2)}
+.calc-bar-labels{display:flex;justify-content:flex-end;font-size:12px;color:var(--dim);font-weight:600;font-family:'JetBrains Mono',monospace;margin-top:2px}
 
 /* Share card overlay */
 #share-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:150;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
@@ -297,14 +298,14 @@ input.si::placeholder{color:var(--muted)}
           </div>
         </div>
       </div>
+      <div class="calc-bar-wrap">
+        <div class="calc-bar-cap" id="calc-bar-cap"></div>
+        <div class="calc-bar"><div class="calc-bar-marker" id="calc-bar-marker" style="left:2%">♟</div></div>
+        <div class="calc-bar-labels"><span>0</span></div>
+      </div>
       <div class="calc-result" id="calc-result" style="display:none">
         <div class="calc-result-num" id="calc-result-num"></div>
         <div class="calc-result-hint" id="calc-result-hint"></div>
-        <div class="calc-bar-wrap">
-          <div class="calc-bar-cap" id="calc-bar-cap"></div>
-          <div class="calc-bar"><div class="calc-bar-marker" id="calc-bar-marker"></div></div>
-          <div class="calc-bar-labels"><span>0</span></div>
-        </div>
       </div>
     </div>
   </div>
@@ -350,25 +351,29 @@ function calcRender(){
   const price=calcCurrency==='usd'?priceRaw*AMD_PER_USD:priceRaw;
   const count=parseFloat(document.getElementById('calc-count').value);
   const box=document.getElementById('calc-result');
-  if(!priceRaw||!count||count<=0){box.style.display='none';return;}
-  const perUnit=price/count;
   const t=TR[lang];
-  const bounds=calcUnit==='hours'?[800,2000]:[1000,3000];
-  let tier;
-  if(perUnit<bounds[0])tier='great';
-  else if(perUnit<bounds[1])tier='good';
-  else tier='future';
-  const hints={great:t.calcGreat,good:t.calcGood,future:t.calcFuture};
-  const colors={great:'#23a55a',good:'#f0b232',future:'#5865f2'};
-  const numEl=document.getElementById('calc-result-num');
-  numEl.style.color=colors[tier];
-  numEl.textContent=Math.round(perUnit).toLocaleString('ru')+' ֏ / '+(calcUnit==='hours'?t.calcPerHour:t.calcPerPlay);
-  document.getElementById('calc-result-hint').textContent=hints[tier];
   document.getElementById('calc-bar-cap').textContent=t.calcBarCap;
+  const bounds=calcUnit==='hours'?[800,2000]:[1000,3000];
   const ref=bounds[1];
-  const barPct=Math.max(2,Math.min(98,100*ref/(perUnit+ref)));
+  let barPct=2; // default: nothing entered yet — pawn starts at the far end of the track
+  if(priceRaw&&count&&count>0){
+    const perUnit=price/count;
+    let tier;
+    if(perUnit<bounds[0])tier='great';
+    else if(perUnit<bounds[1])tier='good';
+    else tier='future';
+    const hints={great:t.calcGreat,good:t.calcGood,future:t.calcFuture};
+    const colors={great:'#23a55a',good:'#f0b232',future:'#5865f2'};
+    const numEl=document.getElementById('calc-result-num');
+    numEl.style.color=colors[tier];
+    numEl.textContent=Math.round(perUnit).toLocaleString('ru')+' ֏ / '+(calcUnit==='hours'?t.calcPerHour:t.calcPerPlay);
+    document.getElementById('calc-result-hint').textContent=hints[tier];
+    box.style.display='block';
+    barPct=Math.max(2,Math.min(98,100*ref/(perUnit+ref)));
+  } else {
+    box.style.display='none';
+  }
   document.getElementById('calc-bar-marker').style.left=barPct+'%';
-  box.style.display='block';
 }
 function setLang(l){
   lang=l;
@@ -455,7 +460,8 @@ function applyTR(){
   document.getElementById('calc-u-plays').textContent=t.calcUnitPlays;
   document.getElementById('calc-u-hours').textContent=t.calcUnitHours;
   calcRender();
-  document.getElementById('modal-share-txt').textContent=t.shareBtn;
+  const shareTxtEl=document.getElementById('modal-share-txt');
+  if(shareTxtEl)shareTxtEl.textContent=t.shareBtn;
   if(_shareListing){
     document.getElementById('share-lbl-n').textContent=t.shareLblN;
     document.getElementById('share-action-btn').textContent=(navigator.share?t.shareBtn:t.shareDownload);
