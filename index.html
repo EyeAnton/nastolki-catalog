@@ -150,6 +150,9 @@ input.si::placeholder{color:var(--muted)}
 .calc-title{font-size:19px;font-weight:700;color:var(--txt)}
 .calc-sub{font-size:13px;color:var(--muted);margin-top:-10px;line-height:1.5}
 .calc-field{display:flex;flex-direction:column;gap:6px}
+.calc-row-inline{display:flex;gap:8px}
+.calc-row-inline .calc-input{flex:1;min-width:0}
+.calc-row-inline .calc-unit-sw{flex-shrink:0}
 .calc-field label{font-size:12px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
 .calc-input{padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
 .calc-input:focus{border-color:var(--acc)}
@@ -251,15 +254,23 @@ input.si::placeholder{color:var(--muted)}
       <div class="calc-sub" id="calc-sub"></div>
       <div class="calc-field">
         <label id="calc-lbl-price"></label>
-        <input type="number" id="calc-price" class="calc-input" inputmode="numeric" placeholder="15000" oninput="calcRender()">
-      </div>
-      <div class="calc-unit-sw">
-        <button class="calc-unit active" data-u="plays" onclick="calcSetUnit(this)" id="calc-u-plays"></button>
-        <button class="calc-unit" data-u="hours" onclick="calcSetUnit(this)" id="calc-u-hours"></button>
+        <div class="calc-row-inline">
+          <input type="number" id="calc-price" class="calc-input" inputmode="numeric" placeholder="15000" oninput="calcRender()">
+          <div class="calc-unit-sw">
+            <button class="calc-unit active" data-c="amd" onclick="calcSetCurrency(this)" id="calc-c-amd">֏</button>
+            <button class="calc-unit" data-c="usd" onclick="calcSetCurrency(this)" id="calc-c-usd">$</button>
+          </div>
+        </div>
       </div>
       <div class="calc-field">
         <label id="calc-lbl-count"></label>
-        <input type="number" id="calc-count" class="calc-input" inputmode="numeric" placeholder="8" oninput="calcRender()">
+        <div class="calc-row-inline">
+          <input type="number" id="calc-count" class="calc-input" inputmode="numeric" placeholder="8" oninput="calcRender()">
+          <div class="calc-unit-sw">
+            <button class="calc-unit active" data-u="plays" onclick="calcSetUnit(this)" id="calc-u-plays"></button>
+            <button class="calc-unit" data-u="hours" onclick="calcSetUnit(this)" id="calc-u-hours"></button>
+          </div>
+        </div>
       </div>
       <div class="calc-result" id="calc-result" style="display:none">
         <div class="calc-result-num" id="calc-result-num"></div>
@@ -272,14 +283,16 @@ input.si::placeholder{color:var(--muted)}
 <script>
 const TR={
   ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',lx:'Обмен',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры (֏)',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать'},
+    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать'},
   en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',lx:'Exchange',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price (֏)',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go'},
+    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go'},
   hy:{sub:'Հայաստանի սեղանի խաղերի շուկա',si:'Որոնել...',ll:'Լեզու',lpl:'Խաղ.',lpr:'Գին',all:'Բոլ.',solo:'Սոլո',p2:'2 հոգի',p4:'մինչ 4',p6:'6+',pa:'Ցանկ.',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Նոր',sc:'Գին ↑',se:'Գին ↓',sr:'BGG',sa:'Ա–Ω',ld:'Ամս.',da:'Բոլ.',dw:'Շաբաթ',dm:'Ամիս',dy:'Տարի',to:'Բացել հայտարարությունը ↗',sb:'Գտնել →',sh:'Թաքցնել ↑',th:'Փնտրի',ti:'խոսակց.:',up:'հստ.',em:'Չի գտնվել',ft:'<a href="https://t.me/used_boardgames_armenia" target="_blank">Telegram</a> · <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը (֏)',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել'}
+    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել'}
 };
 let lang='ru';
 let calcUnit='plays';
+let calcCurrency='amd';
+const AMD_PER_USD=400;
 function setView(v){
   document.getElementById('view-catalog').style.display=v==='catalog'?'':'none';
   document.getElementById('view-calc').style.display=v==='calc'?'':'none';
@@ -288,17 +301,25 @@ function setView(v){
 }
 function calcSetUnit(el){
   calcUnit=el.dataset.u;
-  document.querySelectorAll('.calc-unit').forEach(b=>b.classList.remove('active'));
+  el.parentElement.querySelectorAll('.calc-unit').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('calc-lbl-count').textContent=calcUnit==='hours'?TR[lang].calcLblHours:TR[lang].calcLblPlays;
   document.getElementById('calc-count').placeholder=calcUnit==='hours'?'20':'8';
   calcRender();
 }
+function calcSetCurrency(el){
+  calcCurrency=el.dataset.c;
+  el.parentElement.querySelectorAll('.calc-unit').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('calc-price').placeholder=calcCurrency==='usd'?'40':'15000';
+  calcRender();
+}
 function calcRender(){
-  const price=parseFloat(document.getElementById('calc-price').value);
+  const priceRaw=parseFloat(document.getElementById('calc-price').value);
+  const price=calcCurrency==='usd'?priceRaw*AMD_PER_USD:priceRaw;
   const count=parseFloat(document.getElementById('calc-count').value);
   const box=document.getElementById('calc-result');
-  if(!price||!count||count<=0){box.style.display='none';return;}
+  if(!priceRaw||!count||count<=0){box.style.display='none';return;}
   const perUnit=price/count;
   const t=TR[lang];
   const bounds=calcUnit==='hours'?[800,2000]:[1000,3000];
