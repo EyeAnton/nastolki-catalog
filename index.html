@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Boardex.am</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#1e1f22;--surface:#2b2d31;--card:#313338;--card-h:#383a40;
@@ -15,18 +15,18 @@
   --grad:linear-gradient(135deg,#5865f2,#7b4ff0 50%,#eb459e);
   --r:8px;--rl:12px;
 }
-body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-height:100vh;font-size:14px}
+body{background:var(--bg);color:var(--txt);font-family:'Roboto',sans-serif;min-height:100vh;font-size:14px}
 .hdr{background:var(--surface);border-bottom:1px solid var(--brd);padding:0 20px;height:56px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:30}
-.logo{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.logo{font-family:'Roboto',sans-serif;font-size:17px;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
 .hdiv{width:1px;height:24px;background:var(--brd)}
 .hsub{font-size:12px;color:var(--muted);flex:1}
 .lsw{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:2px;border:1px solid var(--brd)}
-.lb{padding:4px 10px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.lb{padding:4px 10px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-family:'Roboto',sans-serif;cursor:pointer;transition:all .15s}
 .lb.active{background:var(--acc);color:#fff;font-weight:600}
 .lb:hover:not(.active){background:var(--brd);color:var(--txt)}
 .ctrl{background:var(--surface);border-bottom:1px solid var(--brd);padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:100px;z-index:20}
 .ctrl-row1{display:flex;gap:8px;align-items:center;width:100%}
-.flt-toggle{display:none;padding:6px 11px;border-radius:var(--r);border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;gap:5px;align-items:center}
+.flt-toggle{display:none;padding:6px 11px;border-radius:var(--r);border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:12px;font-family:'Roboto',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s;gap:5px;align-items:center}
 .flt-toggle:hover{border-color:var(--brd2);color:var(--txt)}
 .flt-toggle.has-active{border-color:var(--acc);color:#c9cdfb;background:var(--acc-dim)}
 .flt-body{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}
@@ -37,16 +37,16 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-he
 }
 .sw{flex:1;min-width:200px;position:relative}
 .sw svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
-input.si{width:100%;padding:8px 10px 8px 34px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+input.si{width:100%;padding:8px 10px 8px 34px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:13px;font-family:'Roboto',sans-serif;outline:none;transition:border .15s}
 input.si:focus{border-color:var(--acc)}
 input.si::placeholder{color:var(--muted)}
 .fg{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .fl{font-size:11px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
-.chip{padding:5px 11px;border-radius:20px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap}
+.chip{padding:5px 11px;border-radius:20px;border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s;font-family:'Roboto',sans-serif;white-space:nowrap}
 .chip.active{background:var(--acc-dim);border-color:var(--acc);color:#c9cdfb;font-weight:500}
 .chip:hover:not(.active){border-color:var(--brd2);color:var(--txt)}
-.ssel{padding:7px 10px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:12px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
-.cnt{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--acc-dim);color:#c9cdfb;padding:4px 10px;border-radius:20px;white-space:nowrap;border:1px solid rgba(88,101,242,.3);margin-left:auto}
+.ssel{padding:7px 10px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:12px;font-family:'Roboto',sans-serif;outline:none;cursor:pointer}
+.cnt{font-family:'Roboto',sans-serif;font-size:11px;background:var(--acc-dim);color:#c9cdfb;padding:4px 10px;border-radius:20px;white-space:nowrap;border:1px solid rgba(88,101,242,.3);margin-left:auto}
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:12px 16px}
 @media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr)}}
@@ -59,9 +59,9 @@ input.si::placeholder{color:var(--muted)}
 .cov-img.ok{opacity:1}
 .cov-grad{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,rgba(30,31,34,.8));pointer-events:none}
 .cbadges{position:absolute;top:8px;right:8px;display:flex;gap:5px;align-items:center}
-.bgg-b{background:rgba(18,19,21,.8);backdrop-filter:blur(6px);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:#fcba28;font-family:'JetBrains Mono',monospace;text-decoration:none;border:1px solid rgba(252,186,40,.2);transition:background .15s}
+.bgg-b{background:rgba(18,19,21,.8);backdrop-filter:blur(6px);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:#fcba28;font-family:'Roboto',sans-serif;text-decoration:none;border:1px solid rgba(252,186,40,.2);transition:background .15s}
 .bgg-b:hover{background:rgba(252,186,40,.15)}
-.rat-b{background:rgba(18,19,21,.8);backdrop-filter:blur(6px);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--ylw);font-family:'JetBrains Mono',monospace;border:1px solid rgba(240,178,50,.2)}
+.rat-b{background:rgba(18,19,21,.8);backdrop-filter:blur(6px);border-radius:5px;padding:3px 7px;font-size:10px;font-weight:700;color:var(--ylw);font-family:'Roboto',sans-serif;border:1px solid rgba(240,178,50,.2)}
 .cbody{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
 .ctitle{font-size:13px;font-weight:600;color:var(--txt);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .meta-row{display:flex;gap:10px;flex-wrap:wrap}
@@ -77,7 +77,7 @@ input.si::placeholder{color:var(--muted)}
 .tg-hint a:hover{text-decoration:underline}
 .tg-hint .gn{color:var(--txt);font-weight:600}
 .cfoot{display:flex;flex-direction:column;align-items:flex-start;padding:9px 14px;border-top:1px solid var(--brd);background:rgba(0,0,0,.1);gap:3px}
-.price{font-family:'Inter',sans-serif;font-size:15px;font-weight:700;color:var(--grn);white-space:nowrap}
+.price{font-family:'Roboto',sans-serif;font-size:15px;font-weight:700;color:var(--grn);white-space:nowrap}
 .price.unk{font-size:11px;color:var(--dim);font-weight:400;font-style:italic}
 .ftags{display:flex;gap:4px;align-items:center}
 .ltag{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
@@ -97,7 +97,7 @@ input.si::placeholder{color:var(--muted)}
 .bgg-onboard strong{color:#fcba28}
 .bgg-onboard button{margin-top:8px;padding:4px 14px;border-radius:6px;
   border:none;background:var(--acc);color:#fff;font-size:11px;cursor:pointer;
-  font-family:'Inter',sans-serif}
+  font-family:'Roboto',sans-serif}
 @keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 /* BGG pulse */
@@ -112,7 +112,7 @@ input.si::placeholder{color:var(--muted)}
 .hint-item{display:flex;align-items:center;gap:14px;margin-bottom:12px;padding:12px;background:var(--bg);border-radius:10px;border:1px solid var(--brd)}
 .hint-item-desc strong{color:var(--txt);display:block;font-size:14px;margin-bottom:3px}
 .hint-item-desc span{font-size:12px;color:var(--muted);line-height:1.4}
-.hint-ok{width:100%;margin-top:12px;padding:12px;border-radius:8px;border:none;background:var(--acc);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.hint-ok{width:100%;margin-top:12px;padding:12px;border-radius:8px;border:none;background:var(--acc);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif}
 .hint-ok:hover{background:var(--acc-h)}
 
 /* Modal overlay */
@@ -125,10 +125,10 @@ input.si::placeholder{color:var(--muted)}
 .modal-body{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .modal-title{font-size:16px;font-weight:700;color:var(--txt);line-height:1.3}
 .modal-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.modal-price{font-family:'Inter',sans-serif;font-size:20px;font-weight:700;color:var(--grn)}
+.modal-price{font-family:'Roboto',sans-serif;font-size:20px;font-weight:700;color:var(--grn)}
 .modal-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .modal-note{font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;padding:8px 10px;border:1px solid var(--brd);font-style:italic;line-height:1.5}
-.modal-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;width:100%}
+.modal-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;background:var(--acc);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Roboto',sans-serif;text-decoration:none;width:100%}
 .modal-btn:hover{background:var(--acc-h)}
 .modal-btn-sec{background:transparent;border:1px solid var(--brd2);color:var(--txt)}
 .modal-btn-sec:hover{background:var(--brd)}
@@ -147,7 +147,7 @@ input.si::placeholder{color:var(--muted)}
 .qcard-sub{font-size:12px;color:var(--acc);font-weight:500;position:relative;z-index:1}
 
 .tabbar{background:var(--surface);border-bottom:1px solid var(--brd);display:flex;gap:6px;padding:8px 16px;position:sticky;top:56px;z-index:25}
-.tab-btn{padding:7px 14px;border-radius:var(--r);border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.tab-btn{padding:7px 14px;border-radius:var(--r);border:1px solid var(--brd);background:transparent;color:var(--muted);font-size:13px;font-family:'Roboto',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
 .tab-btn.active{background:var(--acc-dim);border-color:var(--acc);color:#c9cdfb;font-weight:600}
 .tab-btn:hover:not(.active){border-color:var(--brd2);color:var(--txt)}
 
@@ -160,35 +160,40 @@ input.si::placeholder{color:var(--muted)}
 .calc-row-inline .calc-input{flex:1;min-width:0}
 .calc-row-inline .calc-unit-sw{flex-shrink:0}
 .calc-field label{font-size:12px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
-.calc-input{padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+.calc-input{padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--r);color:var(--txt);font-size:15px;font-family:'Roboto',sans-serif;outline:none;transition:border .15s}
 .calc-input:focus{border-color:var(--acc)}
 .calc-unit-sw{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:2px;border:1px solid var(--brd);width:fit-content}
-.calc-unit{padding:6px 14px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.calc-unit{padding:6px 14px;border-radius:4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-family:'Roboto',sans-serif;cursor:pointer;transition:all .15s}
 .calc-unit.active{background:var(--acc);color:#fff;font-weight:600}
 .calc-unit:hover:not(.active){background:var(--brd);color:var(--txt)}
 .calc-result{border-top:1px solid var(--brd);padding-top:16px;display:flex;flex-direction:column;gap:8px}
-.calc-result-num{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700}
+.calc-result-num{font-family:'Roboto',sans-serif;font-size:19px;font-weight:700}
 .calc-result-hint{font-size:13px;color:var(--txt);line-height:1.5}
 .calc-bar-wrap{display:flex;flex-direction:column;gap:2px;margin-top:2px;padding-top:26px}
 .calc-bar-cap{font-size:11px;color:var(--dim)}
 .calc-bar{position:relative;height:8px;border-radius:5px;background:linear-gradient(to right,rgba(35,165,90,0),#23a55a);border:1px solid var(--brd)}
 .calc-bar-marker{position:absolute;top:-24px;width:24px;height:24px;line-height:24px;text-align:center;font-size:17px;color:var(--txt);background:var(--card);border:1px solid var(--brd2);border-radius:50%;transform:translateX(-50%);transition:left .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .calc-bar-marker::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--brd2)}
-.calc-bar-labels{display:flex;justify-content:flex-end;font-size:12px;color:var(--dim);font-weight:600;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.calc-bar-labels{display:flex;justify-content:flex-end;font-size:12px;color:var(--dim);font-weight:600;font-family:'Roboto',sans-serif;margin-top:2px}
 
 /* Share card overlay */
 #share-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:150;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
 #share-ov.open{display:flex}
-.share-panel{background:var(--surface);border:1px solid var(--brd);border-radius:var(--rl);max-width:380px;width:100%;padding:16px;position:relative;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
-.share-card{background:linear-gradient(135deg,#5865f2,#7b4ff0 50%,#eb459e);border-radius:var(--rl);padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;color:#fff}
-.share-cov{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:48px}
+.share-panel{background:var(--surface);border:1px solid var(--brd);border-radius:var(--rl);max-width:380px;width:100%;padding:16px;position:relative;display:flex;flex-direction:column;gap:10px;max-height:90vh;overflow-y:auto}
+.share-card{background:linear-gradient(135deg,#5865f2,#7b4ff0 50%,#eb459e);border-radius:var(--rl);padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:#fff}
+.share-sell-tag{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(255,255,255,.2);padding:4px 14px;border-radius:20px;margin-bottom:2px}
+.share-cov{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:44px}
 .share-cov img{width:100%;height:100%;object-fit:cover;display:block}
 .share-title{font-size:17px;font-weight:700;line-height:1.3}
-.share-n-row{display:flex;align-items:center;gap:8px;font-size:13px;background:rgba(0,0,0,.2);border-radius:8px;padding:6px 10px}
-.share-n-row input{width:50px;padding:4px 6px;border-radius:6px;border:none;text-align:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px}
-.share-price{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700}
-.share-insight{font-size:14px;font-weight:600;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 12px}
-.share-brand{font-family:'JetBrains Mono',monospace;font-size:12px;opacity:.85;margin-top:2px}
+.share-meta-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;font-size:11px}
+.share-meta-row span{background:rgba(0,0,0,.2);border-radius:12px;padding:3px 9px}
+.share-listing-price{font-size:22px;font-weight:700}
+.share-calc-box{width:100%;background:rgba(0,0,0,.18);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;margin-top:4px}
+.share-n-row{display:flex;align-items:center;gap:8px;font-size:12px}
+.share-n-row input{width:44px;padding:3px 5px;border-radius:6px;border:none;text-align:center;font-family:'Roboto',sans-serif;font-weight:700;font-size:12px}
+.share-price{font-family:'Roboto',sans-serif;font-size:18px;font-weight:700}
+.share-insight{font-size:12px;font-weight:600;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 10px}
+.share-brand{font-family:'Roboto',sans-serif;font-size:11px;opacity:.85;margin-top:2px}
 </style>
 </head>
 <body>
@@ -314,11 +319,11 @@ input.si::placeholder{color:var(--muted)}
 <script>
 const TR={
   ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',lx:'Обмен',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать',retailNew:'Новая в магазине',retailSoldOut:'нет в наличии',retailSave:'выгода',calcBarCap:'С каждым часом игра дешевеет — стремится к нулю',shareBtn:'Поделиться',shareDownload:'Скачать картинку',shareLblN:'Партий:',insWater:'Дешевле бутылки воды 💧',insCoffee:'Дешевле чашки кофе ☕',insCinema:'Дешевле похода в кино 🎬',insDinner:'Дешевле ужина в ресторане 🍽'},
+    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать',retailNew:'Новая в магазине',retailSoldOut:'нет в наличии',retailSave:'выгода',calcBarCap:'С каждым часом игра дешевеет — стремится к нулю',shareBtn:'Поделиться',shareDownload:'Скачать картинку',shareLblN:'Партий:',insWater:'Дешевле бутылки воды 💧',insCoffee:'Дешевле чашки кофе ☕',insCinema:'Дешевле похода в кино 🎬',insDinner:'Дешевле ужина в ресторане 🍽',sellTag:'Продаю',shareLinkBtn:'Поделиться ссылкой',shareLinkCopied:'Ссылка скопирована!'},
   en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',lx:'Exchange',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go',retailNew:'New in store',retailSoldOut:'out of stock',retailSave:'save',calcBarCap:'Every hour played, the cost trends toward zero',shareBtn:'Share',shareDownload:'Download image',shareLblN:'Plays:',insWater:'Cheaper than a bottle of water 💧',insCoffee:'Cheaper than a cup of coffee ☕',insCinema:'Cheaper than a movie ticket 🎬',insDinner:'Cheaper than a restaurant dinner 🍽'},
+    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go',retailNew:'New in store',retailSoldOut:'out of stock',retailSave:'save',calcBarCap:'Every hour played, the cost trends toward zero',shareBtn:'Share',shareDownload:'Download image',shareLblN:'Plays:',insWater:'Cheaper than a bottle of water 💧',insCoffee:'Cheaper than a cup of coffee ☕',insCinema:'Cheaper than a movie ticket 🎬',insDinner:'Cheaper than a restaurant dinner 🍽',sellTag:'For sale',shareLinkBtn:'Share link',shareLinkCopied:'Link copied!'},
   hy:{sub:'Հայաստանի սեղանի խաղերի շուկա',si:'Որոնել...',ll:'Լեզու',lpl:'Խաղ.',lpr:'Գին',all:'Բոլ.',solo:'Սոլո',p2:'2 հոգի',p4:'մինչ 4',p6:'6+',pa:'Ցանկ.',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Նոր',sc:'Գին ↑',se:'Գին ↓',sr:'BGG',sa:'Ա–Ω',ld:'Ամս.',da:'Բոլ.',dw:'Շաբաթ',dm:'Ամիս',dy:'Տարի',to:'Բացել հայտարարությունը ↗',sb:'Գտնել →',sh:'Թաքցնել ↑',th:'Փնտրի',ti:'խոսակց.:',up:'հստ.',em:'Չի գտնվել',ft:'<a href="https://t.me/used_boardgames_armenia" target="_blank">Telegram</a> · <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել',retailNew:'Նոր խանութում',retailSoldOut:'առկա չէ',retailSave:'խնայում',calcBarCap:'Յուրաքանչյուր ժամի հետ խաղն ավելի է էժանանում՝ մոտենալով զրոյին',shareBtn:'Կիսվել',shareDownload:'Ներբեռնել նկարը',shareLblN:'Խաղեր՝',insWater:'Ավելի էժան քան ջրի շիշը 💧',insCoffee:'Ավելի էժան քան մեկ սուրճ ☕',insCinema:'Ավելի էժան քան կինոյի տոմսը 🎬',insDinner:'Ավելի էժան քան ռեստորանային ընթրիքը 🍽'}
+    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել',retailNew:'Նոր խանութում',retailSoldOut:'առկա չէ',retailSave:'խնայում',calcBarCap:'Յուրաքանչյուր ժամի հետ խաղն ավելի է էժանանում՝ մոտենալով զրոյին',shareBtn:'Կիսվել',shareDownload:'Ներբեռնել նկարը',shareLblN:'Խաղեր՝',insWater:'Ավելի էժան քան ջրի շիշը 💧',insCoffee:'Ավելի էժան քան մեկ սուրճ ☕',insCinema:'Ավելի էժան քան կինոյի տոմսը 🎬',insDinner:'Ավելի էժան քան ռեստորանային ընթրիքը 🍽',sellTag:'Վաճառվում է',shareLinkBtn:'Կիսվել հղումով',shareLinkCopied:'Հղումը պատճենվեց!'}
 };
 let lang='ru';
 let calcUnit='plays';
@@ -463,8 +468,10 @@ function applyTR(){
   const shareTxtEl=document.getElementById('modal-share-txt');
   if(shareTxtEl)shareTxtEl.textContent=t.shareBtn;
   if(_shareListing){
+    document.getElementById('share-sell-tag').textContent=t.sellTag;
     document.getElementById('share-lbl-n').textContent=t.shareLblN;
-    document.getElementById('share-action-btn').textContent=(navigator.share?t.shareBtn:t.shareDownload);
+    document.getElementById('share-action-btn').textContent=t.shareLinkBtn;
+    document.getElementById('share-image-btn').textContent=(navigator.share?t.shareBtn:t.shareDownload);
     shareCardRender();
   }
 }
@@ -643,6 +650,7 @@ function quoteCard(){
   return '<div class="qcard"><div class="qcard-text">'+item.t+'</div><div class="qcard-sub">'+item.s+'</div></div>';
 }
 applyTR();render();
+document.addEventListener('DOMContentLoaded',checkShareLink);
 
 // Modal
 let _modalRow=null;
@@ -739,20 +747,38 @@ function openShareCard(){
   } else {
     cov.textContent=em(r.t);
   }
+  document.getElementById('share-sell-tag').textContent=TR[lang].sellTag;
   document.getElementById('share-lbl-n').textContent=TR[lang].shareLblN;
-  document.getElementById('share-action-btn').textContent=(navigator.share?TR[lang].shareBtn:TR[lang].shareDownload);
-  document.getElementById('modal-share-txt').textContent=TR[lang].shareBtn;
+  document.getElementById('share-action-btn').textContent=TR[lang].shareLinkBtn;
+  document.getElementById('share-image-btn').textContent=(navigator.share?TR[lang].shareBtn:TR[lang].shareDownload);
+  const shareTxtEl=document.getElementById('modal-share-txt');
+  if(shareTxtEl)shareTxtEl.textContent=TR[lang].shareBtn;
   shareCardRender();
   document.getElementById('share-ov').classList.add('open');
 }
 function closeShare(){
   document.getElementById('share-ov')?.classList.remove('open');
 }
+function shareMetaParts(r,b){
+  const parts=[];
+  if(b?.rating)parts.push('★ '+b.rating);
+  const pl=b?fmtP(b.min_players,b.max_players):null;
+  if(pl)parts.push('👥 '+pl);
+  const tm=b?fmtT(b.min_playtime,b.max_playtime):null;
+  if(tm)parts.push('⏱ '+tm);
+  if(r.l==='ENG')parts.push('🇬🇧 ENG');
+  if(r.l==='РУС')parts.push('🇷🇺 РУС');
+  return parts;
+}
 function shareCardRender(){
   const r=_shareListing;
   if(!r)return;
+  const b=BGG[r.t];
   const t=TR[lang];
   document.getElementById('share-title').textContent=r.t;
+  const parts=shareMetaParts(r,b);
+  document.getElementById('share-meta-row').innerHTML=parts.map(p=>'<span>'+p+'</span>').join('');
+  document.getElementById('share-listing-price').textContent=r.p?r.p.toLocaleString('ru')+' ֏':t.up;
   const n=Math.max(1,parseInt(document.getElementById('share-n').value)||10);
   const perPlay=r.p?Math.round(r.p/n):null;
   document.getElementById('share-price-line').textContent=perPlay
@@ -762,6 +788,46 @@ function shareCardRender(){
   const insEl=document.getElementById('share-insight');
   if(insight){insEl.textContent=t[insight.key];insEl.style.display='block';}
   else{insEl.style.display='none';}
+}
+function buildShareUrl(r,n){
+  const u=new URL(location.href.split('?')[0].split('#')[0]);
+  if(r.m)u.searchParams.set('share',r.m);
+  else u.searchParams.set('share_t',r.t);
+  u.searchParams.set('n',n);
+  return u.toString();
+}
+async function shareLink(){
+  const r=_shareListing;
+  if(!r)return;
+  const n=Math.max(1,parseInt(document.getElementById('share-n').value)||10);
+  const url=buildShareUrl(r,n);
+  const t=TR[lang];
+  if(navigator.share){
+    try{ await navigator.share({url,title:'Boardex.am',text:r.t}); return; }
+    catch(e){ /* cancelled — fall through to copy */ }
+  }
+  const btn=document.getElementById('share-action-btn');
+  try{
+    await navigator.clipboard.writeText(url);
+    btn.textContent=t.shareLinkCopied;
+    setTimeout(()=>{btn.textContent=t.shareLinkBtn;},2000);
+  }catch(e){
+    window.prompt(t.shareLinkBtn+':',url);
+  }
+}
+function checkShareLink(){
+  const params=new URLSearchParams(location.search);
+  const shareM=params.get('share');
+  const shareT=params.get('share_t');
+  if(!shareM && !shareT)return;
+  const n=params.get('n');
+  const idx=shareM
+    ? _rows.findIndex(x=>String(x.m)===shareM)
+    : _rows.findIndex(x=>x.t===shareT);
+  if(idx<0)return;
+  openCard(idx);
+  if(n)document.getElementById('share-n').value=n;
+  openShareCard();
 }
 function roundRect(ctx,x,y,w,h,r){
   ctx.beginPath();
@@ -809,39 +875,64 @@ async function buildShareCanvas(){
   ctx.fillStyle='rgba(24,25,28,.88)';
   roundRect(ctx,50,50,980,980,44);ctx.fill();
   ctx.textAlign='center';
+
+  // sell tag pill
+  ctx.font='700 26px Roboto, sans-serif';
+  const tagText=t.sellTag;
+  const tagW=ctx.measureText(tagText).width+56;
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  roundRect(ctx,540-tagW/2,95,tagW,46,23);ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.fillText(tagText,540,127);
+
   const coverImg=b?.bgg_id?await loadImageSafe('covers/'+b.bgg_id+'.webp'):null;
   if(coverImg){
-    roundRect(ctx,140,130,800,440,24);ctx.save();ctx.clip();
-    const scale=Math.max(800/coverImg.width,440/coverImg.height);
+    roundRect(ctx,190,175,700,340,24);ctx.save();ctx.clip();
+    const scale=Math.max(700/coverImg.width,340/coverImg.height);
     const iw=coverImg.width*scale,ih=coverImg.height*scale;
-    ctx.drawImage(coverImg,540-iw/2,350-ih/2,iw,ih);
+    ctx.drawImage(coverImg,540-iw/2,345-ih/2,iw,ih);
     ctx.restore();
   } else {
-    ctx.font='170px sans-serif';
-    ctx.fillText(em(r.t),540,420);
+    ctx.font='130px sans-serif';
+    ctx.fillText(em(r.t),540,400);
   }
   ctx.fillStyle='#fff';
-  ctx.font='700 50px Inter, sans-serif';
-  wrapText(ctx,r.t,540,630,820,58);
-  ctx.font='700 84px "JetBrains Mono", monospace';
-  ctx.fillStyle='#23a55a';
-  ctx.fillText(perPlay?perPlay.toLocaleString('ru')+' ֏':'—',540,790);
-  ctx.font='400 30px Inter, sans-serif';
+  ctx.font='700 42px Roboto, sans-serif';
+  wrapText(ctx,r.t,540,585,820,50);
+
+  // meta row (rating / players / playtime / language)
+  ctx.font='400 24px Roboto, sans-serif';
   ctx.fillStyle='#dbdee1';
-  ctx.fillText(t.calcPerPlay+' · '+n+' '+t.calcUnitPlays.toLowerCase(),540,835);
+  ctx.fillText(shareMetaParts(r,b).join('   ·   '),540,660);
+
+  // listing price
+  ctx.font='700 48px Roboto, sans-serif';
+  ctx.fillStyle='#23a55a';
+  ctx.fillText(r.p?r.p.toLocaleString('ru')+' ֏':t.up,540,730);
+
+  // calc panel
+  ctx.fillStyle='rgba(0,0,0,.2)';
+  roundRect(ctx,140,770,800,200,20);ctx.fill();
+  ctx.font='700 34px Roboto, sans-serif';
+  ctx.fillStyle='#fff';
+  ctx.fillText(perPlay?perPlay.toLocaleString('ru')+' ֏':'—',540,825);
+  ctx.font='400 24px Roboto, sans-serif';
+  ctx.fillStyle='#dbdee1';
+  ctx.fillText(t.calcPerPlay+' · '+n+' '+t.calcUnitPlays.toLowerCase(),540,860);
   const insight=perPlay?calcInsight(perPlay):null;
   if(insight){
-    ctx.font='600 32px Inter, sans-serif';
+    ctx.font='600 26px Roboto, sans-serif';
     ctx.fillStyle='#f0b232';
-    wrapText(ctx,t[insight.key],540,900,760,40);
+    wrapText(ctx,t[insight.key],540,920,720,32);
   }
-  ctx.font='700 28px "JetBrains Mono", monospace';
+
+  ctx.font='700 26px Roboto, sans-serif';
   ctx.fillStyle='#949ba4';
-  ctx.fillText('♟ Boardex.am',540,975);
+  ctx.fillText('♟ Boardex.am',540,1000);
   return new Promise(res=>canvas.toBlob(res,'image/png'));
 }
 async function shareOrDownload(){
-  const btn=document.getElementById('share-action-btn');
+  const btn=document.getElementById('share-image-btn');
   const t=TR[lang];
   btn.disabled=true;
   try{
@@ -926,17 +1017,23 @@ async function shareOrDownload(){
   <div class="share-panel">
     <button class="modal-close" onclick="closeShare()">✕</button>
     <div class="share-card" id="share-card">
+      <div class="share-sell-tag" id="share-sell-tag"></div>
       <div class="share-cov" id="share-cov"></div>
       <div class="share-title" id="share-title"></div>
-      <div class="share-n-row">
-        <span id="share-lbl-n"></span>
-        <input type="number" id="share-n" value="10" min="1" oninput="shareCardRender()">
+      <div class="share-meta-row" id="share-meta-row"></div>
+      <div class="share-listing-price" id="share-listing-price"></div>
+      <div class="share-calc-box">
+        <div class="share-n-row">
+          <span id="share-lbl-n"></span>
+          <input type="number" id="share-n" value="10" min="1" oninput="shareCardRender()">
+        </div>
+        <div class="share-price" id="share-price-line"></div>
+        <div class="share-insight" id="share-insight" style="display:none"></div>
       </div>
-      <div class="share-price" id="share-price-line"></div>
-      <div class="share-insight" id="share-insight" style="display:none"></div>
       <div class="share-brand">♟ Boardex.am</div>
     </div>
-    <button class="modal-btn" id="share-action-btn" onclick="shareOrDownload()"></button>
+    <button class="modal-btn" id="share-action-btn" onclick="shareLink()"></button>
+    <button class="modal-btn modal-btn-sec" id="share-image-btn" onclick="shareOrDownload()"></button>
   </div>
 </div>
 </body>
