@@ -126,7 +126,9 @@ id 9479925 в Make, оставлен неактивным как архив, м�
 |---|---|
 | `deploy.ps1` | Деплой на Cloudflare Pages |
 | `add_new_listings.py` | Автопайплайн: Telegram Bot API → Claude → `auto_add.py` / `review_needed.json`. Запускается по крону из `auto_listings.yml` |
-| `auto_add.py` | Добавление/апдейт одной игры: BGG lookup, обложка (Tesera→Yandex), розничная цена (hobby.am→hobbygames.am), запись в `D`/`BGG`. Вызывается вручную (workflow_dispatch `add_game.yml`) и из `add_new_listings.py` |
+| `auto_add.py` | Добавление/апдейт одной игры: BGG lookup, обложка (Tesera→Yandex), розничная цена (через `retail_lookup.py`), запись в `D`/`BGG`. Вызывается вручную (workflow_dispatch `add_game.yml`) и из `add_new_listings.py` |
+| `retail_lookup.py` | Общий модуль поиска розничной цены (hobby.am→hobbygames.am), используется `auto_add.py` и `backfill_retail_prices.py` |
+| `backfill_retail_prices.py` | Разовый скрипт: находит `retail_price` для существующих BGG-записей, у которых его ещё нет (новые игры получают его автоматически через `auto_add.py`). Можно перезапускать — уже найденные пропускает |
 | `state.json` | Курсор дедупликации для `add_new_listings.py` (`last_msg_id`, `last_update_id`, `chat_id`) |
 | `review_needed.json` | Объявления, которые классификатор не смог уверенно сопоставить — на ручную проверку |
 | `blacklist.json` | Продавцы, чьи объявления никогда не добавлять автоматически |
