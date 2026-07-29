@@ -29,7 +29,13 @@ const BGG = {
     min_playtime: 60, max_playtime: 120,
     categories: ["Cooperative", "Strategy"],
     image: "https://cf.geekdo-images.com/...",  // fallback CDN
-    bgg_url: "https://boardgamegeek.com/boardgame/123456/slug"
+    bgg_url: "https://boardgamegeek.com/boardgame/123456/slug",
+    // необязательные поля — заполняются auto_add.py при добавлении НОВОЙ игры,
+    // best-effort сравнение с розницей (hobby.am / hobbygames.am):
+    retail_price: 45000,           // цена в магазине, AMD
+    retail_url: "https://...",     // ссылка на товар
+    retail_source: "hobby.am",     // hobby.am | hobbygames.am
+    retail_in_stock: true          // true/false/null (неизвестно)
   }
 }
 
@@ -75,6 +81,32 @@ powershell -File deploy.ps1
 
 ---
 
+## Автоматическое добавление объявлений
+
+Раньше: Make.com-сценарий скрейпил t.me/s/ канал → OpenAI классифицировал → POST на GitHub Actions.
+**Отошли от Make.com — используем Claude API напрямую** (сценарий "Boardex — Auto-add listings",
+id 9479925 в Make, оставлен неактивным как архив, можно удалить).
+
+Текущий пайплайн:
+1. **GitHub Actions `auto_listings.yml`** — по расписанию (cron, по умолчанию раз в день, легко
+   поменять частоту) вызывает `add_new_listings.py`.
+2. **`add_new_listings.py`** — получает новые сообщения через **Telegram Bot API** (`getUpdates`,
+   не через t.me/s/ — у группы `used_boardgames_armenia` публичная история сообщений закрыта,
+   т.к. это группа, а не канал). Классифицирует через Claude (`claude-haiku-4-5`), поддерживает
+   несколько игр в одном сообщении и зачёркнутые (уже проданные) позиции. Уверенные совпадения
+   идут в `auto_add.py` (реюз существующей логики), остальное — в `review_needed.json` на ручную проверку.
+3. **`state.json`** — курсор дедупликации (`last_msg_id`, `last_update_id`, `chat_id`).
+
+**Требуется вручную (владелец репозитория):**
+- Добавить бота `@boardex_update_bot` в группу `used_boardgames_armenia` (нужны права админа группы —
+  выполняет тот, у кого они есть, не обязательно владелец репо)
+- В GitHub Settings → Secrets добавить `ANTHROPIC_API_KEY` и `TELEGRAM_BOT_TOKEN`
+
+Пока бот не добавлен в реальную группу — пайплайн не увидит новых сообщений (Bot API не может
+получить историю до момента вступления бота в чат).
+
+---
+
 ## Правила
 
 | Правило | Детали |
@@ -93,7 +125,13 @@ powershell -File deploy.ps1
 | Файл | Назначение |
 |---|---|
 | `deploy.ps1` | Деплой на Cloudflare Pages |
+| `add_new_listings.py` | Автопайплайн: Telegram Bot API → Claude → `auto_add.py` / `review_needed.json`. Запускается по крону из `auto_listings.yml` |
+| `auto_add.py` | Добавление/апдейт одной игры: BGG lookup, обложка (Tesera→Yandex), розничная цена (hobby.am→hobbygames.am), запись в `D`/`BGG`. Вызывается вручную (workflow_dispatch `add_game.yml`) и из `add_new_listings.py` |
+| `state.json` | Курсор дедупликации для `add_new_listings.py` (`last_msg_id`, `last_update_id`, `chat_id`) |
+| `review_needed.json` | Объявления, которые классификатор не смог уверенно сопоставить — на ручную проверку |
+| `blacklist.json` | Продавцы, чьи объявления никогда не добавлять автоматически |
 | `add_listings.py` | Пример массового добавления (использовался для таблицы) |
+| `make_blueprint.json` | **Устарело** — старый Make.com-сценарий, заменён на `add_new_listings.py` + `auto_listings.yml`. Оставлен как референс |
 | `patch_*.py` | Разовые патчи UI (уже применены, можно не трогать) |
 
 ---
@@ -106,3 +144,8 @@ powershell -File deploy.ps1
 - Каждые 9 карточек — вдохновляющая цитата про ротацию игр
 - Первый визит — онбординг-тултип с объяснением интерфейса
 - Адаптивная сетка: 2 колонки (мобайл) → 3 → 4 → 5 (широкий)
+- Таб «Калькулятор» — цена ÷ партии/часы (в ֏ или $), градиентная шкала-индикатор
+  (прозрачный → зелёный, стремится к «0» с каждым сыгранным часом)
+- В модалке карточки: сравнение с розничной ценой (если найдена), кнопка
+  «Поделиться» — рендерит объявление в шэринг-карточку 1080×1080 (цена за N партий +
+  сравнение вроде «дешевле кофе») и открывает Web Share API либо скачивает PNG
