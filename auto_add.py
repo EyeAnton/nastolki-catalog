@@ -15,6 +15,7 @@ Usage:
 import argparse, json, re, io, time, sys, html as html_module
 from pathlib import Path
 from datetime import date
+from retail_lookup import lookup_retail_price
 
 sys.stdout.reconfigure(encoding='utf-8')
 ROOT   = Path(__file__).parent
@@ -144,6 +145,19 @@ else:
             'min_playtime': None, 'max_playtime': None,
             'categories': [], 'image': '', 'bgg_url': ''
         }
+
+    # Retail price lookup (best-effort, cached once per game)
+    if session:
+        retail = lookup_retail_price(session, args.title)
+        if retail:
+            BGG[args.title]['retail_price'] = retail['price']
+            BGG[args.title]['retail_url'] = retail['url']
+            BGG[args.title]['retail_source'] = retail['source']
+            BGG[args.title]['retail_in_stock'] = retail['in_stock']
+            stock_txt = {True: 'in stock', False: 'sold out', None: 'stock unknown'}[retail['in_stock']]
+            print(f"Retail price: {retail['price']} ֏ ({retail['source']}, {stock_txt})")
+        else:
+            print("Retail price: not found")
 
     # Download cover
     if session and bgg_id:

@@ -1,0 +1,60 @@
+name: Auto-add listings (Claude)
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # daily 08:00 UTC (~12:00 Yerevan time) — adjust freely, cost scales with run frequency
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no commit/deploy)?'
+        default: 'false'
+
+jobs:
+  auto-add-listings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install curl_cffi Pillow anthropic
+
+      - name: Run add_new_listings.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python add_new_listings.py --limit 30 ${{ github.event.inputs.dry_run == 'true' && '--dry-run' || '' }}
+
+      - name: Commit changes
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          git config user.name "boardex-bot"
+          git config user.email "bot@boardex.am"
+          git add index.html covers/ state.json review_needed.json
+          git diff --staged --quiet || git commit -m "Auto: new listings from Telegram"
+          git push
+
+      - name: Install wrangler
+        if: github.event.inputs.dry_run != 'true'
+        run: npm install -g wrangler
+
+      - name: Build dist
+        if: github.event.inputs.dry_run != 'true'
+        run: |
+          rm -rf dist && mkdir dist
+          cp index.html dist/
+          cp -r covers dist/
+
+      - name: Deploy to Cloudflare Pages
+        if: github.event.inputs.dry_run != 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          wrangler pages deploy dist/ \
+            --project-name nastolki-catalog \
+            --branch main \
+            --commit-dirty=true
