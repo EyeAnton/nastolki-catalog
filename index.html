@@ -133,6 +133,10 @@ input.si::placeholder{color:var(--muted)}
 .modal-bgg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 .modal-bgg a{color:var(--acc);text-decoration:none}
 .modal-bgg a:hover{text-decoration:underline}
+.modal-retail{font-size:12px;color:var(--muted);background:var(--bg);border-radius:6px;padding:8px 10px;border:1px solid var(--brd)}
+.modal-retail a{color:var(--acc);text-decoration:none}
+.modal-retail a:hover{text-decoration:underline}
+.modal-retail .save{color:#23a55a;font-weight:600}
 
 /* Motivational quote card */
 .qcard{background:linear-gradient(135deg,var(--acc-dim),rgba(123,79,240,.12));border:1px solid rgba(88,101,242,.3);border-radius:var(--rl);padding:20px 16px;display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-start;grid-column:span 1;position:relative;overflow:hidden;min-height:160px}
@@ -163,6 +167,11 @@ input.si::placeholder{color:var(--muted)}
 .calc-result{border-top:1px solid var(--brd);padding-top:16px;display:flex;flex-direction:column;gap:8px}
 .calc-result-num{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700}
 .calc-result-hint{font-size:13px;color:var(--txt);line-height:1.5}
+.calc-bar-wrap{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.calc-bar-cap{font-size:11px;color:var(--dim)}
+.calc-bar{position:relative;height:10px;border-radius:6px;background:linear-gradient(to right,rgba(35,165,90,0),#23a55a);border:1px solid var(--brd)}
+.calc-bar-marker{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid var(--bg);box-shadow:0 0 0 2px var(--acc);transform:translate(-50%,-50%);transition:left .4s cubic-bezier(.2,.8,.2,1)}
+.calc-bar-labels{display:flex;justify-content:flex-end;font-size:12px;color:var(--dim);font-weight:600;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
 <body>
@@ -275,6 +284,11 @@ input.si::placeholder{color:var(--muted)}
       <div class="calc-result" id="calc-result" style="display:none">
         <div class="calc-result-num" id="calc-result-num"></div>
         <div class="calc-result-hint" id="calc-result-hint"></div>
+        <div class="calc-bar-wrap">
+          <div class="calc-bar-cap" id="calc-bar-cap"></div>
+          <div class="calc-bar"><div class="calc-bar-marker" id="calc-bar-marker"></div></div>
+          <div class="calc-bar-labels"><span>0</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -283,11 +297,11 @@ input.si::placeholder{color:var(--muted)}
 <script>
 const TR={
   ru:{sub:'Найди свою игру мечты',si:'Поиск по названию игры...',ll:'Язык',lpl:'Игроки',lpr:'Цена',all:'Все',solo:'Соло',p2:'2 игрока',p4:'до 4',p6:'6+',pa:'Любая',p0:'до 5К',p5:'5–15К',p15:'15–40К',p40:'40К+',sn:'Новые',sc:'Цена ↑',se:'Цена ↓',sr:'Рейтинг BGG',sa:'А → Я',ld:'Дата публикации',lx:'Обмен',da:'Все',dw:'Неделя',dm:'Месяц',dy:'Год',to:'Открыть объявление в чате ↗',sb:'Найти продавца →',sh:'Скрыть ↑',th:'Ищи',ti:'в чате:',up:'уточнить',em:'Ничего не найдено',ft:'Хочешь подключиться к проекту? Пиши <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Данные из открытого Telegram-чата · <a href="#">убрать объявление?</a> · Метаданные: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать'},
+    tabCat:'Каталог',tabCalc:'Калькулятор',calcTitle:'Калькулятор стоимости игры',calcSub:'Сколько на самом деле стоит один вечер с этой игрой?',calcLblPrice:'Цена игры',calcLblPlays:'Сколько раз сыграли',calcLblHours:'Сколько часов наиграно',calcUnitPlays:'Партии',calcUnitHours:'Часы',calcPerPlay:'партию',calcPerHour:'час',calcGreat:'Уже отбила себя с лихвой, отличный результат! 🎉',calcGood:'Хороший результат, но можно сыграть ещё',calcFuture:'У игры ещё есть будущее — рано отпускать',retailNew:'Новая в магазине',retailSoldOut:'нет в наличии',retailSave:'выгода',calcBarCap:'С каждым часом игра дешевеет — стремится к нулю'},
   en:{sub:'Find your dream game',si:'Search by game name...',ll:'Language',lpl:'Players',lpr:'Price',all:'All',solo:'Solo',p2:'2p',p4:'up to 4',p6:'6+',pa:'Any',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Newest',sc:'Price ↑',se:'Price ↓',sr:'BGG rating',sa:'A → Z',ld:'Publication date',lx:'Exchange',da:'All',dw:'Week',dm:'Month',dy:'Year',to:'Open listing in chat ↗',sb:'Find seller →',sh:'Hide ↑',th:'Search for',ti:'in chat:',up:'ask price',em:'Nothing found',ft:'Want to join the project? Write <a href=\'https://t.me/EyeAnton\' target=\'_blank\'>@EyeAnton</a> · Data from open Telegram chat · <a href="#">remove listing?</a> · Metadata: <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go'},
+    tabCat:'Catalog',tabCalc:'Calculator',calcTitle:'Cost-per-play calculator',calcSub:'What does an evening with this game really cost?',calcLblPrice:'Game price',calcLblPlays:'How many times played',calcLblHours:'How many hours played',calcUnitPlays:'Plays',calcUnitHours:'Hours',calcPerPlay:'play',calcPerHour:'hour',calcGreat:'Already paid for itself many times over — great result! 🎉',calcGood:"Good result, but a few more plays wouldn't hurt",calcFuture:'This game still has a future — too early to let it go',retailNew:'New in store',retailSoldOut:'out of stock',retailSave:'save',calcBarCap:'Every hour played, the cost trends toward zero'},
   hy:{sub:'Հայաստանի սեղանի խաղերի շուկա',si:'Որոնել...',ll:'Լեզու',lpl:'Խաղ.',lpr:'Գին',all:'Բոլ.',solo:'Սոլո',p2:'2 հոգի',p4:'մինչ 4',p6:'6+',pa:'Ցանկ.',p0:'<5K',p5:'5–15K',p15:'15–40K',p40:'40K+',sn:'Նոր',sc:'Գին ↑',se:'Գին ↓',sr:'BGG',sa:'Ա–Ω',ld:'Ամս.',da:'Բոլ.',dw:'Շաբաթ',dm:'Ամիս',dy:'Տարի',to:'Բացել հայտարարությունը ↗',sb:'Գտնել →',sh:'Թաքցնել ↑',th:'Փնտրի',ti:'խոսակց.:',up:'հստ.',em:'Չի գտնվել',ft:'<a href="https://t.me/used_boardgames_armenia" target="_blank">Telegram</a> · <a href="https://boardgamegeek.com" target="_blank">BGG</a>',
-    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել'}
+    tabCat:'Կատալոգ',tabCalc:'Հաշվիչ',calcTitle:'Խաղի արժեքի հաշվիչ',calcSub:'Որքա՞ն իրականում արժե մեկ երեկո այս խաղով',calcLblPrice:'Խաղի գինը',calcLblPlays:'Քանի անգամ եք խաղացել',calcLblHours:'Քանի ժամ եք խաղացել',calcUnitPlays:'Խաղեր',calcUnitHours:'Ժամեր',calcPerPlay:'խաղ',calcPerHour:'ժամ',calcGreat:'Արդեն մարվել է՝ հիանալի արդյունք 🎉',calcGood:'Լավ արդյունք, բայց կարելի է ևս խաղալ',calcFuture:'Խաղն ունի ապագա՝ վաղ է բաց թողնել',retailNew:'Նոր խանութում',retailSoldOut:'առկա չէ',retailSave:'խնայում',calcBarCap:'Յուրաքանչյուր ժամի հետ խաղն ավելի է էժանանում՝ մոտենալով զրոյին'}
 };
 let lang='ru';
 let calcUnit='plays';
@@ -333,6 +347,10 @@ function calcRender(){
   numEl.style.color=colors[tier];
   numEl.textContent=Math.round(perUnit).toLocaleString('ru')+' ֏ / '+(calcUnit==='hours'?t.calcPerHour:t.calcPerPlay);
   document.getElementById('calc-result-hint').textContent=hints[tier];
+  document.getElementById('calc-bar-cap').textContent=t.calcBarCap;
+  const ref=bounds[1];
+  const barPct=Math.max(2,Math.min(98,100*ref/(perUnit+ref)));
+  document.getElementById('calc-bar-marker').style.left=barPct+'%';
   box.style.display='block';
 }
 function setLang(l){
@@ -636,6 +654,21 @@ function openCard(i){
   const tgEl=document.getElementById('modal-tg');
   if(r.m){tgEl.href='https://t.me/used_boardgames_armenia/'+r.m;tgEl.style.display='flex';}
   else{tgEl.style.display='none';}
+  // retail price comparison
+  const retailEl=document.getElementById('modal-retail');
+  if(b?.retail_price){
+    const t2=TR[lang];
+    let txt=t2.retailNew+': <b>'+b.retail_price.toLocaleString('ru')+' ֏</b>';
+    if(b.retail_in_stock===false)txt+=' ('+t2.retailSoldOut+')';
+    if(r.p&&r.p<b.retail_price){
+      const save=Math.round((1-r.p/b.retail_price)*100);
+      if(save>0)txt+=' · <span class="save">'+t2.retailSave+' '+save+'%</span>';
+    }
+    retailEl.innerHTML='<a href="'+esc(b.retail_url)+'" target="_blank" onclick="event.stopPropagation()">'+txt+' ↗</a>';
+    retailEl.style.display='block';
+  }else{
+    retailEl.style.display='none';
+  }
   // bgg link
   const bggEl=document.getElementById('modal-bgg');
   if(b?.bgg_url){bggEl.innerHTML='<a href="'+b.bgg_url+'" target="_blank" onclick="event.stopPropagation()">Подробнее на BoardGameGeek ↗</a>';}
@@ -695,6 +728,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
       <div class="modal-meta" id="modal-meta"></div>
       <div class="modal-row" id="modal-tags"></div>
       <div class="modal-note" id="modal-note" style="display:none"></div>
+      <div class="modal-retail" id="modal-retail" style="display:none"></div>
       <a class="modal-btn" id="modal-tg" href="#" target="_blank">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
         Найти продавца в Telegram
