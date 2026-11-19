@@ -47,6 +47,10 @@ SLUG_OVERRIDES = {
     "inis":                             "inis-2016",
     "keyflower":                        "keyflower-base",
     "rising-sun":                       "rising-sun-2018",
+    "sleeping-gods":                    "Sleeping-Gods",
+    "sleeping-gods-tides-of-ruin":      "Sleeping-Gods-Tides-of-Ruin",
+    "sleeping-gods-dungeons":           "SleepingGodsDungeons",
+    "paper-dungeons-a-dungeon-scrawler-game": "paper-dungeons",
 }
 
 session = cffi_requests.Session(impersonate="chrome131")
