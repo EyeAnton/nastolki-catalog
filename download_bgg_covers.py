@@ -8,11 +8,17 @@ one (Russian instead of English, an unrelated game, a placeholder):
     ("tesera", slug)          Tesera game page
     ("bgg", None)             BGG primary image (api.geekdo.com, no key needed)
     ("bggversion", version)   image of a specific BGG version (e.g. Russian edition)
+    ("url", image_url)        direct image URL (e.g. a shop product photo)
+
+The whole image is kept: it is only scaled to fit 300x300 (aspect ratio kept, no crop);
+the site shows covers with object-fit: contain. --trim additionally crops near-white
+margins around the box (never the box itself) - use it for shop photos on white.
 
 Usage:
     python download_bgg_covers.py                 # only games without a cover
     python download_bgg_covers.py --ids 1,2,3     # (re)download these ids, overwriting
     python download_bgg_covers.py --ids 1,2 --out /tmp/x   # write candidates elsewhere to compare
+    python download_bgg_covers.py --ids 34169 --trim       # crop white margins
 
 Always check new covers visually (contact sheet) before committing:
 Tesera often has only the Russian edition, and slugs can point to another game.
@@ -53,6 +59,8 @@ COVER_SOURCES = {
     287670: ("bgg", None),            # Sleeping Gods: Dungeons - English edition
     16443:  ("tesera", "dungeoneer-dragons-of-the-forsaken-desert"),
     180974: ("tesera", "potion-explosion"),       # "Лаборатория" (Russian Potion Explosion)
+    # "Зельеварение. Практикум" (Potion-Making: Practice) - Russian box from hobbygames.am, use --trim
+    34169:  ("url", "https://hobbygames.am/image/cache/hobbygames_beta/data/Pravilnye_igry/Zeljevarenje/Zel-1980x1980-wm.webp"),
     422437: ("tesera", "podzemelya-i-pesiki"),
     244918: ("tesera", "exit-the-game-the-mysterious-museum"),
     327076: ("tesera", "cartaventura-lhassa"),
@@ -101,14 +109,16 @@ def trim_white(img):
     return img.crop(box) if box else img
 
 
-def save_cover(data, dest):
+def save_cover(data, dest, trim=False):
     img = Image.open(io.BytesIO(data))
     if img.mode in ("RGBA", "LA", "P"):
         img = img.convert("RGBA")
         bg = Image.new("RGB", img.size, (255, 255, 255))
         bg.paste(img, mask=img.split()[-1])
         img = bg
-    img = trim_white(img.convert("RGB"))
+    img = img.convert("RGB")
+    if trim:
+        img = trim_white(img)
     img.thumbnail(THUMB_SIZE, Image.LANCZOS)
     img.save(dest, "WEBP", quality=82)
 
@@ -117,6 +127,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ids", help="comma-separated bgg ids to (re)download, overwriting")
     ap.add_argument("--out", default=str(ROOT / "covers"), help="output dir")
+    ap.add_argument("--trim", action="store_true", help="crop near-white margins around the box")
     args = ap.parse_args()
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -151,12 +162,14 @@ def main():
                 data = from_tesera(arg)
             elif kind == "bgg":
                 data = from_geekdo(bid, "thing")
+            elif kind == "url":
+                data = get_bytes(arg)
             else:
                 data = from_geekdo(arg, "version")
             if not data:
                 raise RuntimeError("image download failed")
             dest = out / f"{bid}.webp"
-            save_cover(data, dest)
+            save_cover(data, dest, trim=args.trim)
             print(f"  OK   [{name}] {kind}:{arg or bid} {dest.stat().st_size // 1024}KB")
             ok += 1
             time.sleep(0.3)
