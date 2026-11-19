@@ -1,0 +1,10 @@
+name = "nastolki-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Правки листингов продавцов (ключ "seller:<ник>")
+[[kv_namespaces]]
+binding = "OVERRIDES"
+id = "d677a80744b14cf1a12147e2ace55da9"
+
+# Секрет EDIT_KEY — через `npx wrangler secret put EDIT_KEY` (значение не в репо)
