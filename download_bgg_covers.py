@@ -1,48 +1,39 @@
 #!/usr/bin/env python3
 """
-Download board game covers from Tesera.ru (accessible, no bot protection).
-Uses BGG URL slug to construct Tesera game page URL.
+Download board game covers into covers/{bgg_id}.webp (fit into 300x300, WebP q=82).
+
+Default source: Tesera.ru og:image (slug from the BGG URL, see SLUG_OVERRIDES).
+Per-game sources in COVER_SOURCES pin the exact edition when Tesera gives the wrong
+one (Russian instead of English, an unrelated game, a placeholder):
+    ("tesera", slug)          Tesera game page
+    ("bgg", None)             BGG primary image (api.geekdo.com, no key needed)
+    ("bggversion", version)   image of a specific BGG version (e.g. Russian edition)
+
+Usage:
+    python download_bgg_covers.py                 # only games without a cover
+    python download_bgg_covers.py --ids 1,2,3     # (re)download these ids, overwriting
+    python download_bgg_covers.py --ids 1,2 --out /tmp/x   # write candidates elsewhere to compare
+
+Always check new covers visually (contact sheet) before committing:
+Tesera often has only the Russian edition, and slugs can point to another game.
 Requires: pip install curl_cffi pillow
 """
-import re, io, json, time
+import argparse, io, json, re, time
 from pathlib import Path
 from curl_cffi import requests as cffi_requests
-from PIL import Image
+from PIL import Image, ImageChops
 
-CATALOG_HTML = Path(__file__).parent / "index.html"
-COVERS_DIR   = Path(__file__).parent / "covers"
+ROOT         = Path(__file__).parent
+CATALOG_HTML = ROOT / "index.html"
 THUMB_SIZE   = (300, 300)
 MIN_BYTES    = 2000
-
-# ── load catalog ──────────────────────────────────────────────────────────────
-with open(CATALOG_HTML, encoding="utf-8") as f:
-    raw = f.read()
-bgg_data = json.loads(re.search(r'const BGG=(\{.*?\});', raw, re.DOTALL).group(1))
-
-games = {}
-for game_name, v in bgg_data.items():
-    bid = str(v.get("bgg_id", ""))
-    if not bid:
-        continue
-    bgg_url = v.get("bgg_url", "")
-    m = re.search(r'/boardgame/\d+/([^/?#\s]+)', bgg_url)
-    slug = m.group(1) if m else None
-    games[bid] = {"name": game_name, "slug": slug}
-
-COVERS_DIR.mkdir(exist_ok=True)
-
-to_download = {bid: info for bid, info in games.items()
-               if not (COVERS_DIR / f"{bid}.webp").exists()
-               or (COVERS_DIR / f"{bid}.webp").stat().st_size < MIN_BYTES}
-
-print(f"Total: {len(games)} games, need covers: {len(to_download)}")
 
 # Manual slug overrides: BGG slug -> Tesera slug
 SLUG_OVERRIDES = {
     "mysterium":                        "mystery",
     "codenames-duet":                   "codenames",
     "catan":                            "the-settlers-of-catan",
-    "gloomhaven-jaws-of-the-lion":      "gloomhaven-jaws-of-the-lion",
+    "gloomhaven-jaws-of-the-lion":      "gloomhaven-jaws-of-the-Lion",
     "splendor":                         "splendor-2012",
     "inis":                             "inis-2016",
     "keyflower":                        "keyflower-base",
@@ -51,71 +42,130 @@ SLUG_OVERRIDES = {
     "sleeping-gods-tides-of-ruin":      "Sleeping-Gods-Tides-of-Ruin",
     "sleeping-gods-dungeons":           "SleepingGodsDungeons",
     "paper-dungeons-a-dungeon-scrawler-game": "paper-dungeons",
+    "tales-of-tails":                   "podzemelya-i-pesiki",
+}
+
+# Pinned sources by bgg_id (checked visually 2026-11-19)
+COVER_SOURCES = {
+    291457: ("bggversion", 577944),   # Gloomhaven: JotL - Russian edition (Tesera has a placeholder)
+    255984: ("bgg", None),            # Sleeping Gods - English edition
+    283766: ("bgg", None),            # Sleeping Gods: Tides of Ruin - English edition
+    287670: ("bgg", None),            # Sleeping Gods: Dungeons - English edition
+    16443:  ("tesera", "dungeoneer-dragons-of-the-forsaken-desert"),
+    180974: ("tesera", "potion-explosion"),       # "Лаборатория" (Russian Potion Explosion)
+    422437: ("tesera", "podzemelya-i-pesiki"),
+    244918: ("tesera", "exit-the-game-the-mysterious-museum"),
+    327076: ("tesera", "cartaventura-lhassa"),
+    364073: ("tesera", "splendor-duel"),
 }
 
 session = cffi_requests.Session(impersonate="chrome131")
 
-ok = fail = skip_no_slug = 0
 
-for bid, info in sorted(to_download.items(), key=lambda x: x[1]["name"]):
-    name = info["name"]
-    slug = info["slug"]
-    dest = COVERS_DIR / f"{bid}.webp"
+def get_bytes(url):
+    r = session.get(url, timeout=30)
+    if r.status_code == 200 and len(r.content) >= MIN_BYTES:
+        return r.content
+    return None
 
-    if not slug:
-        print(f" SKIP  [{name}] no BGG URL slug")
-        skip_no_slug += 1
-        continue
 
-    tesera_slug = SLUG_OVERRIDES.get(slug, slug)
-    tesera_url = f"https://tesera.ru/game/{tesera_slug}/"
+def from_tesera(slug):
+    r = session.get(f"https://tesera.ru/game/{slug}/", timeout=15, headers={"Accept-Language": "ru,en"})
+    if r.status_code != 200:
+        raise RuntimeError(f"Tesera HTTP {r.status_code} ({slug})")
+    og = re.search(r'og:image["\s]+content="([^"]+)"', r.text)
+    if not og:
+        raise RuntimeError("no og:image on Tesera page")
+    url = og.group(1)
+    if not re.search(r'\.(jpe?g|png|webp)$', url, re.I):
+        raise RuntimeError("Tesera has no cover (placeholder)")
+    return get_bytes(url.replace("200x200xpa", "600x600xpa")) or get_bytes(url)
 
-    try:
-        r = session.get(tesera_url, timeout=15, headers={"Accept-Language": "ru,en"})
 
-        if r.status_code == 404:
-            print(f" 404   [{name}] not on Tesera ({slug})")
-            fail += 1
+def from_geekdo(objectid, objecttype):
+    r = session.get("https://api.geekdo.com/api/geekitems",
+                    params={"objectid": objectid, "objecttype": objecttype}, timeout=20)
+    item = (r.json() or {}).get("item") or {}
+    imgs = item.get("images") or {}
+    url = imgs.get("original") or item.get("imageurl")
+    if not url:
+        raise RuntimeError(f"no image for BGG {objecttype} {objectid}")
+    return get_bytes(url)
+
+
+def trim_white(img):
+    """Crop the near-white padding Tesera adds around boxes."""
+    bg = Image.new("RGB", img.size, (255, 255, 255))
+    diff = ImageChops.difference(img, bg).convert("L").point(lambda v: 255 if v > 12 else 0)
+    box = diff.getbbox()
+    return img.crop(box) if box else img
+
+
+def save_cover(data, dest):
+    img = Image.open(io.BytesIO(data))
+    if img.mode in ("RGBA", "LA", "P"):
+        img = img.convert("RGBA")
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        bg.paste(img, mask=img.split()[-1])
+        img = bg
+    img = trim_white(img.convert("RGB"))
+    img.thumbnail(THUMB_SIZE, Image.LANCZOS)
+    img.save(dest, "WEBP", quality=82)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--ids", help="comma-separated bgg ids to (re)download, overwriting")
+    ap.add_argument("--out", default=str(ROOT / "covers"), help="output dir")
+    args = ap.parse_args()
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+
+    raw = CATALOG_HTML.read_text(encoding="utf-8")
+    bgg_data = json.loads(re.search(r'const BGG=(\{.*?\});', raw, re.DOTALL).group(1))
+    games = {}
+    for game_name, v in bgg_data.items():
+        if not v.get("bgg_id"):
             continue
+        m = re.search(r'/boardgame/\d+/([^/?#\s]+)', v.get("bgg_url") or "")
+        games[int(v["bgg_id"])] = {"name": game_name, "slug": m.group(1) if m else None}
 
-        if r.status_code != 200:
-            print(f" FAIL  [{name}] Tesera HTTP {r.status_code}")
+    if args.ids:
+        want = {int(x) for x in args.ids.split(",") if x.strip()}
+        todo = {b: games.get(b, {"name": str(b), "slug": None}) for b in want}
+    else:
+        todo = {b: i for b, i in games.items()
+                if not (out / f"{b}.webp").exists() or (out / f"{b}.webp").stat().st_size < MIN_BYTES}
+    print(f"Total: {len(games)} games, to download: {len(todo)}")
+
+    ok = fail = 0
+    for bid, info in sorted(todo.items(), key=lambda x: x[1]["name"]):
+        name = info["name"]
+        kind, arg = COVER_SOURCES.get(bid, ("tesera", None))
+        if kind == "tesera" and not arg:
+            arg = SLUG_OVERRIDES.get(info["slug"], info["slug"]) if info["slug"] else None
+        try:
+            if kind == "tesera":
+                if not arg:
+                    raise RuntimeError("no BGG URL slug")
+                data = from_tesera(arg)
+            elif kind == "bgg":
+                data = from_geekdo(bid, "thing")
+            else:
+                data = from_geekdo(arg, "version")
+            if not data:
+                raise RuntimeError("image download failed")
+            dest = out / f"{bid}.webp"
+            save_cover(data, dest)
+            print(f"  OK   [{name}] {kind}:{arg or bid} {dest.stat().st_size // 1024}KB")
+            ok += 1
+            time.sleep(0.3)
+        except Exception as e:
+            print(f" FAIL  [{name}] {kind}:{arg} {e}")
             fail += 1
-            continue
 
-        # extract og:image URL
-        og_m = re.search(r'og:image["\s]+content="([^"]+)"', r.text)
-        if not og_m:
-            print(f" FAIL  [{name}] no og:image on Tesera page")
-            fail += 1
-            continue
+    print(f"\nDone: {ok} saved, {fail} failed")
 
-        og_url = og_m.group(1)
-        # upgrade to 600x600
-        img_url = og_url.replace("200x200xpa", "600x600xpa")
 
-        r2 = session.get(img_url, timeout=15)
-        if r2.status_code != 200 or len(r2.content) < MIN_BYTES:
-            # fallback to 200x200
-            r2 = session.get(og_url, timeout=15)
-
-        if r2.status_code != 200 or len(r2.content) < MIN_BYTES:
-            print(f" FAIL  [{name}] image HTTP {r2.status_code}")
-            fail += 1
-            continue
-
-        img = Image.open(io.BytesIO(r2.content)).convert("RGB")
-        img.thumbnail(THUMB_SIZE, Image.LANCZOS)
-        img.save(dest, "WEBP", quality=82)
-        kb = dest.stat().st_size // 1024
-        print(f"  OK   [{name}] {kb}KB")
-        ok += 1
-        time.sleep(0.3)
-
-    except Exception as e:
-        print(f" ERR   [{name}] {e}")
-        fail += 1
-
-print(f"\nDone: {ok} saved, {fail} failed, {skip_no_slug} skipped (no slug)")
-if fail:
-    print("Re-run to retry failures.")
+if __name__ == "__main__":
+    main()
