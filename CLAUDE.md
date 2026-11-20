@@ -89,6 +89,16 @@ powershell -File deploy.ps1
 
 ---
 
+## Правка листингов владельцем (вход через Telegram)
+
+- Страница продавца `?u=<ник>` → «Я продавец — войти» → Telegram Login Widget (бот — константа `TG_LOGIN_BOT` в index.html, домен `nastolki-catalog.pages.dev` привязан через BotFather `/setdomain`).
+- Worker `nastolki-api` (`worker/src/auth.js`): `POST /auth/telegram` проверяет подпись (HMAC-SHA256, ключ SHA256(bot token), `auth_date` ≤ суток) и выдаёт токен сессии на 12 ч (HMAC с `SESSION_SECRET`). Править можно, только если @username == ник продавца `s` (без регистра и @). Ник паролем не является.
+- Владельцу видны «✎ править» на карточках; в редакторе — цена, название, язык, примечание, обложка, обмен, «продана» (`sold`), «скрыть» (`hidden`).
+- Админ (все продавцы, общий `EDIT_KEY`): `?u=<ник>&edit=1&admin=1`.
+- Секреты: `npx wrangler secret put TG_LOGIN_BOT_TOKEN`, `… SESSION_SECRET`, `… EDIT_KEY`.
+
+---
+
 ## Скрипты в папке
 
 | Файл | Назначение |

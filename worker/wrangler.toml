@@ -7,4 +7,7 @@ compatibility_date = "2026-10-01"
 binding = "OVERRIDES"
 id = "d677a80744b14cf1a12147e2ace55da9"
 
-# Секрет EDIT_KEY — через `npx wrangler secret put EDIT_KEY` (значение не в репо)
+# Секреты — через `npx wrangler secret put <ИМЯ>` (значения не в репо):
+#   EDIT_KEY            — админский ключ (правка любых продавцов, уборка картинок)
+#   TG_LOGIN_BOT_TOKEN  — токен бота для Telegram Login Widget (вход владельцев листингов)
+#   SESSION_SECRET      — случайная строка для подписи токенов сессии (например `openssl rand -hex 32`)

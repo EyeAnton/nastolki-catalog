@@ -1,14 +1,21 @@
 // nastolki-api — правки листингов продавца поверх каталога (index.html).
 // KV OVERRIDES:
-//   "seller:<ник в нижнем регистре>" → {"<t|s|d>": {p, n, x, hidden, bgg_url, bgg_id, title, l, img}}
+//   "seller:<ник в нижнем регистре>" → {"<t|s|d>": {p, n, x, hidden, sold, bgg_url, bgg_id, title, l, img}}
 //   "img:<id>" → байты обложки (WebP/JPEG/PNG ≤ 60 КБ), metadata {ct}
+// Авторизация (Authorization: Bearer …):
+//   владелец — токен сессии из POST /auth/telegram (правит только листинги продавца, чей ник == его @username);
+//   админ    — EDIT_KEY (любой продавец; уборка картинок).
+// POST   /auth/telegram {данные Telegram Login Widget} — публично; проверяет подпись, отдаёт {token, username, exp}
 // GET    /overrides?seller=<ник>      — публично, только правки этого продавца
-// PUT    /overrides {key, seller, patch} — нужен Authorization: Bearer <EDIT_KEY>
-// POST   /img      (тело — картинка)  — EDIT_KEY; отдаёт {id, url}
+// GET    /overrides/all               — публично, правки всех продавцов одним объектом {"<t|s|d>": {...}} (для каталога)
+// PUT    /overrides {key, seller, patch} — владелец этого продавца или EDIT_KEY
+// POST   /img      (тело — картинка)  — любой вошедший владелец или EDIT_KEY; отдаёт {id, url}
 // GET    /img/<id>                    — публично, Cache-Control immutable
-// DELETE /img/<id>                    — EDIT_KEY (уборка)
-// POST   /img/proxy {url}             — EDIT_KEY; скачивает картинку по ссылке и отдаёт байты
+// DELETE /img/<id>                    — только EDIT_KEY (уборка)
+// POST   /img/proxy {url}             — любой вошедший владелец или EDIT_KEY; скачивает картинку по ссылке и отдаёт байты
 //                                       (чтобы страница могла сжать её в canvas без CORS)
+
+import { safeEqual, verifyTelegramLogin, makeSession, verifySession, ownsSeller } from './auth.js';
 
 const MAX_STR = 200;
 const MAX_TITLE = 120;
@@ -16,7 +23,7 @@ const MAX_BODY = 4096;
 const MAX_ENTRIES = 500;
 const MAX_IMG = 60 * 1024;
 const MAX_PROXY = 8 * 1024 * 1024;
-const FIELDS = ['p', 'n', 'x', 'hidden', 'bgg_url', 'bgg_id', 'title', 'l', 'img'];
+const FIELDS = ['p', 'n', 'x', 'hidden', 'sold', 'bgg_url', 'bgg_id', 'title', 'l', 'img'];
 const LANGS = ['ENG', 'РУС'];
 const BGG_RE = /^https:\/\/(www\.)?boardgamegeek\.com\/boardgame(expansion)?\/(\d+)(\/[\w\-%.]*)?$/;
 const IMG_ID_RE = /^[a-f0-9]{32}$/;
@@ -53,20 +60,69 @@ function json(req, status, data, extra = {}) {
 const norm = (s) => String(s || '').trim().toLowerCase();
 const kvKey = (seller) => 'seller:' + norm(seller);
 
-// Сравнение без утечки по времени
-function safeEqual(a, b) {
-  const enc = new TextEncoder();
-  const x = enc.encode(a), y = enc.encode(b);
-  let diff = x.length ^ y.length;
-  for (let i = 0; i < Math.max(x.length, y.length); i++) diff |= (x[i] || 0) ^ (y[i] || 0);
-  return diff === 0;
+function bearer(req) {
+  const m = (req.headers.get('Authorization') || '').match(/^Bearer\s+(.+)$/);
+  return m ? m[1].trim() : '';
 }
 
-function authorized(req, env) {
-  const h = req.headers.get('Authorization') || '';
-  const m = h.match(/^Bearer\s+(.+)$/);
-  if (!m || !env.EDIT_KEY) return false;
-  return safeEqual(m[1].trim(), env.EDIT_KEY);
+// Админ — общий EDIT_KEY (только для владельца сайта, не для продавцов)
+function isAdmin(req, env) {
+  const t = bearer(req);
+  return !!t && !!env.EDIT_KEY && safeEqual(t, env.EDIT_KEY);
+}
+
+// Кто делает запрос: {admin:true} | {username} | {error, code}.
+// seller задан — владелец должен совпасть с продавцом (ник без регистра и без @).
+async function whoami(req, env, seller) {
+  if (isAdmin(req, env)) return { admin: true };
+  const s = await verifySession(bearer(req), env.SESSION_SECRET);
+  if (!s.ok) return { error: s.error, code: s.code };
+  if (seller !== undefined && !ownsSeller(s.username, seller))
+    return { error: 'Эти листинги принадлежат другому продавцу — ты вошёл как @' + s.username, code: 'wrong_user', forbidden: true };
+  return { username: s.username };
+}
+
+function denied(req, who) {
+  return json(req, who.forbidden ? 403 : 401, { error: who.error || 'unauthorized', code: who.code || 'unauthorized' });
+}
+
+async function authTelegram(req, env) {
+  const raw = await req.text();
+  if (raw.length > MAX_BODY) return json(req, 413, { error: 'body too large' });
+  let data;
+  try { data = JSON.parse(raw); } catch { return json(req, 400, { error: 'invalid json', code: 'bad_signature' }); }
+  // Подписываются только плоские поля виджета
+  if (data && typeof data === 'object') for (const v of Object.values(data)) if (v !== null && typeof v === 'object') return json(req, 400, { error: 'invalid data', code: 'bad_signature' });
+  const r = await verifyTelegramLogin(data, env.TG_LOGIN_BOT_TOKEN);
+  if (!r.ok) return json(req, r.code === 'not_configured' ? 503 : 401, { error: r.error, code: r.code });
+  if (!env.SESSION_SECRET) return json(req, 503, { error: 'Вход через Telegram ещё не настроен', code: 'not_configured' });
+  const { token, exp } = await makeSession(r.username, env.SESSION_SECRET);
+  return json(req, 200, { ok: true, token, username: r.username, exp });
+}
+
+// Все правки всех продавцов — для общего каталога (скрытые/проданные/цены)
+async function allOverrides(req, env) {
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const ck = new Request(new URL(req.url).origin + '/overrides/all');
+  if (cache) {
+    const hit = await cache.match(ck);
+    if (hit) {
+      const h = new Headers(hit.headers);
+      for (const [k, v] of Object.entries(cors(req))) h.set(k, v);
+      return new Response(hit.body, { status: hit.status, headers: h });
+    }
+  }
+  const out = {};
+  let cursor;
+  do {
+    const page = await env.OVERRIDES.list({ prefix: 'seller:', cursor });
+    const vals = await Promise.all(page.keys.map((k) => env.OVERRIDES.get(k.name, { type: 'json' })));
+    for (const v of vals) if (v && typeof v === 'object') Object.assign(out, v);
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor);
+  const body = JSON.stringify(out);
+  if (cache) await cache.put(ck, new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60' } }));
+  return new Response(body, { headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60', ...cors(req) } });
 }
 
 // Тип картинки по первым байтам (не верим Content-Type на слово)
@@ -96,7 +152,7 @@ async function validatePatch(patch, env, base) {
     if (v === null) continue;
     if (k === 'p' && !(typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 10000000)) return 'p must be a number 0..10000000';
     if (k === 'n' && !(typeof v === 'string' && v.length <= MAX_STR)) return 'n must be a string <= 200';
-    if ((k === 'x' || k === 'hidden') && typeof v !== 'boolean') return k + ' must be boolean';
+    if ((k === 'x' || k === 'hidden' || k === 'sold') && typeof v !== 'boolean') return k + ' must be boolean';
     if (k === 'title' && !(typeof v === 'string' && v.trim().length <= MAX_TITLE)) return 'Название — не длиннее 120 символов';
     if (k === 'l' && !LANGS.includes(v)) return 'Язык — только ENG или РУС';
     if (k === 'bgg_id' && !(Number.isInteger(v) && v > 0 && v < 100000000)) return 'bgg_id — целое число';
@@ -123,7 +179,7 @@ function applyPatch(entry, patch) {
   const out = { ...entry };
   for (const [k, v] of Object.entries(patch)) {
     const s = typeof v === 'string' ? v.trim() : v;
-    if (v === null || (k === 'hidden' && v === false) || (k === 'title' && s === '')) delete out[k];
+    if (v === null || ((k === 'hidden' || k === 'sold') && v === false) || (k === 'title' && s === '')) delete out[k];
     else out[k] = s;
   }
   return out;
@@ -145,7 +201,7 @@ async function handleImg(req, env, url) {
     });
   }
   if (req.method === 'DELETE') {
-    if (!authorized(req, env)) return json(req, 401, { error: 'unauthorized' });
+    if (!isAdmin(req, env)) return json(req, 401, { error: 'unauthorized' });
     if (!IMG_ID_RE.test(id)) return json(req, 404, { error: 'not found' });
     await env.OVERRIDES.delete('img:' + id);
     return json(req, 200, { ok: true });
@@ -154,7 +210,8 @@ async function handleImg(req, env, url) {
 }
 
 async function uploadImg(req, env, url) {
-  if (!authorized(req, env)) return json(req, 401, { error: 'unauthorized' });
+  const who = await whoami(req, env);
+  if (who.error) return denied(req, who);
   const ct = (req.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
   if (!IMG_TYPES.includes(ct)) return json(req, 415, { error: 'Можно только JPG, PNG или WebP' });
   const len = Number(req.headers.get('Content-Length') || 0);
@@ -171,7 +228,8 @@ async function uploadImg(req, env, url) {
 }
 
 async function proxyImg(req, env) {
-  if (!authorized(req, env)) return json(req, 401, { error: 'unauthorized' });
+  const who = await whoami(req, env);
+  if (who.error) return denied(req, who);
   const raw = await req.text();
   if (raw.length > MAX_BODY) return json(req, 413, { error: 'body too large' });
   let src;
@@ -204,6 +262,8 @@ async function handle(req, env) {
   if (url.pathname === '/img' && req.method === 'POST') return uploadImg(req, env, url);
   if (url.pathname === '/img/proxy' && req.method === 'POST') return proxyImg(req, env);
   if (url.pathname.startsWith('/img/')) return handleImg(req, env, url);
+  if (url.pathname === '/auth/telegram' && req.method === 'POST') return authTelegram(req, env);
+  if (url.pathname === '/overrides/all' && req.method === 'GET') return allOverrides(req, env);
   if (url.pathname !== '/overrides') return json(req, 404, { error: 'not found' });
 
   if (req.method === 'GET') {
@@ -214,7 +274,8 @@ async function handle(req, env) {
   }
 
   if (req.method === 'PUT') {
-    if (!authorized(req, env)) return json(req, 401, { error: 'unauthorized' });
+    const pre = await whoami(req, env);
+    if (pre.error) return denied(req, pre);
     const raw = await req.text();
     if (raw.length > MAX_BODY) return json(req, 413, { error: 'body too large' });
     let body;
@@ -225,6 +286,9 @@ async function handle(req, env) {
     // ключ = t|s|d; название t может содержать "|", поэтому режем с конца
     const i2 = key.lastIndexOf('|'), i1 = i2 > 0 ? key.lastIndexOf('|', i2 - 1) : -1;
     if (i1 <= 0 || norm(key.slice(i1 + 1, i2)) !== norm(seller)) return json(req, 400, { error: 'key does not belong to seller' });
+    // Владелец правит только свои листинги: продавец == его @username
+    if (!pre.admin && !ownsSeller(pre.username, seller))
+      return json(req, 403, { error: 'Эти листинги принадлежат другому продавцу — ты вошёл как @' + pre.username, code: 'wrong_user' });
     const err = await validatePatch(patch, env, url.origin);
     if (err) return json(req, 400, { error: err });
 
@@ -236,6 +300,7 @@ async function handle(req, env) {
     if (Object.keys(all).length) await env.OVERRIDES.put(kvKey(seller), JSON.stringify(all));
     else await env.OVERRIDES.delete(kvKey(seller));
     if (prev.img && prev.img !== next.img) await dropOrphanImgs(prev, all, env, url.origin);
+    if (typeof caches !== 'undefined') await caches.default.delete(new Request(url.origin + '/overrides/all'));
     return json(req, 200, { ok: true, key, entry: all[key] || null });
   }
 

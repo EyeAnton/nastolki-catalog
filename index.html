@@ -29,7 +29,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;min-he
 .useller{display:none;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 20px 0;padding:10px 14px;border:1px solid rgba(88,101,242,.3);background:var(--acc-dim);border-radius:var(--r);font-size:13px;color:var(--txt)}
 .useller.on{display:flex}
 .useller a{color:#c9cdfb}
-.useller a.uedit{margin-left:auto}
+.useller .uacts{margin-left:auto;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 /* Режим правки (?u=<ник>&edit=1) */
 body.edit-mode .ctrl,body.edit-mode #grid,body.edit-mode #empty{display:none}
 .editor{display:none;margin:12px 20px 24px;flex-direction:column;gap:10px}
@@ -69,6 +69,20 @@ body.edit-mode .editor{display:flex}
 .ed-lang button{padding:7px 14px;border:none;background:var(--bg);color:var(--muted);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
 .ed-lang button.on{background:var(--acc);color:#fff}
 .ed-hint{font-size:11px;color:var(--muted)}
+.ed-row.hl{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc-dim)}
+/* Вход владельца через Telegram */
+.useller a.ulink{cursor:pointer}
+.tglogin{display:none;margin:8px 20px 0;padding:12px 14px;border:1px solid var(--brd);background:var(--card);border-radius:var(--r);font-size:13px;color:var(--txt);flex-direction:column;gap:8px;line-height:1.5}
+.tglogin.on{display:flex}
+.tg-err{color:#f23f43}
+.tglogin .tg-muted{color:var(--muted);font-size:12px}
+/* Продана */
+.card.sold .cov img,.card.sold .cov-em{filter:grayscale(1);opacity:.55}
+.card.sold .price{text-decoration:line-through;color:var(--muted)}
+.sold-b{position:absolute;top:8px;left:8px;background:#f23f43;color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.02em}
+.stag{background:rgba(242,63,67,.15);color:#f23f43;border:1px solid rgba(242,63,67,.35);padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.cedit{align-self:flex-start;margin-top:4px;padding:4px 10px;border-radius:6px;border:1px solid var(--acc);background:var(--acc-dim);color:#c9cdfb;font-size:12px;text-decoration:none;font-family:inherit}
+.cedit:hover{background:var(--acc);color:#fff}
 @media(max-width:520px){.editor{margin:12px 16px 24px}.ed-grid{grid-template-columns:1fr;gap:4px}.ed-grid label{margin-top:4px}.ed-save{flex:1;padding:11px 16px}.ed-btn{padding:8px 10px}}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface);border:1px solid var(--acc);color:var(--txt);padding:10px 16px;border-radius:var(--r);font-size:13px;z-index:200;max-width:calc(100% - 32px);text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.on{opacity:1}
@@ -264,7 +278,8 @@ input.si::placeholder{color:var(--muted)}
   </select>
   </div>
 </div>
-<div class="useller" id="useller"><span id="utxt">Все игры этого продавца · <b id="ucnt">0</b></span><a class="uedit" id="uedit" href="#">✎ править</a><a href="./">← Весь каталог</a></div>
+<div class="useller" id="useller"><span id="utxt">Все игры этого продавца · <b id="ucnt">0</b></span><span class="uacts"><a class="uedit" id="uedit" href="#" style="display:none">✎ править</a><a class="ulink" id="ulogin" onclick="toggleLogin();return false">Я продавец — войти</a><a class="ulink" id="ulogout" style="display:none" onclick="logout();return false">Выйти</a><a href="./">← Весь каталог</a></span></div>
+<div class="tglogin" id="tglogin"></div>
 <div class="editor" id="editor"></div>
 <div class="grid" id="grid"></div>
 <div class="toast" id="toast"></div>
@@ -365,6 +380,10 @@ const OWNER='Anton Egorov';
 const QS=new URLSearchParams(location.search);
 const UQ=(QS.get('u')||'').trim().toLowerCase();
 const EDIT=!!UQ&&QS.get('edit')==='1';
+// Админский вход общим ключом EDIT_KEY: ?u=<ник>&edit=1&admin=1 (только для владельца сайта)
+const ADMIN=EDIT&&QS.get('admin')==='1';
+// Имя бота Telegram Login Widget без @ (домен привязан через BotFather /setdomain); пусто — вход не настроен
+const TG_LOGIN_BOT='';
 // Правки продавца хранятся в Worker nastolki-api (KV), поверх D
 const API_BASE='https://nastolki-api.leritosha.workers.dev';
 const BGG_RE=/^https:\/\/(www\.)?boardgamegeek\.com\/boardgame(expansion)?\/(\d+)(\/[\w\-%.]*)?$/;
@@ -380,6 +399,7 @@ function applyOv(it){
   it.x=o.x!==undefined?o.x:it._b.x;
   it.l=o.l!==undefined?o.l:it._b.l;
   it._h=!!o.hidden;
+  it._sold=!!o.sold;
   it._bgg=o.bgg_url;
   it._bid=o.bgg_id;
   it._title=o.title||it._b.title;
@@ -398,23 +418,115 @@ function coverId(r){return r._bid||BGG[r.t]?.bgg_id||null}
 function bggUrl(r){return r._bgg!==undefined?r._bgg:(BGG[r.t]?.bgg_url||'')}
 function updUcnt(){document.getElementById('ucnt').textContent=items.filter(x=>!x._h).length}
 function loadOverrides(){
-  if(!UQ)return;
   const ac=typeof AbortController!=='undefined'?new AbortController():null;
   const tm=setTimeout(()=>ac&&ac.abort(),6000);
-  fetch(API_BASE+'/overrides?seller='+encodeURIComponent(UQ),{cache:'no-store',signal:ac?ac.signal:undefined})
+  // страница продавца — только его правки; общий каталог — правки всех (скрытые, проданные, цены)
+  const u=UQ?API_BASE+'/overrides?seller='+encodeURIComponent(UQ):API_BASE+'/overrides/all';
+  fetch(u,{cache:UQ?'no-store':'default',signal:ac?ac.signal:undefined})
     .then(r=>r.ok?r.json():Promise.reject(r.status))
-    .then(o=>{OV=(o&&typeof o==='object'&&!Array.isArray(o))?o:{};items.forEach(applyOv);updUcnt();render();if(EDIT)renderEditor('')})
+    .then(o=>{OV=(o&&typeof o==='object'&&!Array.isArray(o))?o:{};items.forEach(applyOv);if(UQ)updUcnt();render();if(EDIT)renderEditor('')})
     .catch(()=>{if(EDIT)renderEditor('Не удалось загрузить сохранённые правки — показаны данные каталога.')})
     .finally(()=>clearTimeout(tm));
 }
+// Админский ключ (только режим &admin=1)
 const EK='nastolki-edit-key';
 function getEditKey(){
   let k=null;
   try{k=localStorage.getItem(EK)}catch(e){}
-  if(!k){k=(window.prompt('Ключ редактирования:')||'').trim();if(!k)return null;try{localStorage.setItem(EK,k)}catch(e){}}
+  if(!k){k=(window.prompt('Админский ключ редактирования:')||'').trim();if(!k)return null;try{localStorage.setItem(EK,k)}catch(e){}}
   return k;
 }
 function forgetEditKey(){try{localStorage.removeItem(EK)}catch(e){}}
+// Сессия владельца после входа через Telegram: {token, u, exp}; срок задаёт сервер
+const SK='nastolki-session';
+const normNick=s=>String(s||'').trim().replace(/^@/,'').toLowerCase();
+function getSession(){
+  let s=null;
+  try{s=JSON.parse(localStorage.getItem(SK)||'null')}catch(e){}
+  if(!s||typeof s.token!=='string'||typeof s.u!=='string'||!(s.exp*1000>Date.now()+30000)){if(s)clearSession();return null}
+  return s;
+}
+function clearSession(){try{localStorage.removeItem(SK)}catch(e){}}
+// Может ли текущий посетитель править листинги этой страницы
+function canEdit(){
+  if(!UQ)return false;
+  if(ADMIN)return true;
+  const s=getSession();
+  return !!s&&s.u===normNick(UQ);
+}
+// Значение Authorization; null — нужен вход
+function authToken(){
+  if(ADMIN)return getEditKey();
+  const s=getSession();
+  return s&&s.u===normNick(UQ)?s.token:null;
+}
+// Ответ 401/403: понятное сообщение, просроченную сессию забываем
+async function authFail(res){
+  const j=await res.json().catch(()=>({}));
+  if(ADMIN){forgetEditKey();return 'Неверный админский ключ — нажми ещё раз и введи заново'}
+  if(j.code==='wrong_user')return j.error||'Эти листинги принадлежат другому продавцу';
+  clearSession();updOwnerUi();
+  if(j.code==='expired')return 'Сессия истекла — войди через Telegram ещё раз (кнопка вверху)';
+  return j.error||'Нужно войти через Telegram (кнопка вверху)';
+}
+function editHref(i){return '?u='+encodeURIComponent(UQ)+'&edit=1'+(ADMIN?'&admin=1':'')+(i!==undefined?'#e'+i:'')}
+function viewHref(){return '?u='+encodeURIComponent(UQ)}
+function updOwnerUi(){
+  if(!UQ)return;
+  const s=getSession(),own=canEdit();
+  const ue=document.getElementById('uedit');
+  ue.style.display=(own||EDIT)?'':'none';
+  document.getElementById('ulogin').style.display=(ADMIN||own)?'none':'';
+  const lo=document.getElementById('ulogout');
+  lo.style.display=s?'':'none';
+  lo.textContent=s?'Выйти (@'+s.u+')':'Выйти';
+}
+function tgMsg(html){
+  const box=document.getElementById('tglogin');
+  box.innerHTML=html;box.classList.add('on');
+  return box;
+}
+function mountTgWidget(el){
+  if(!TG_LOGIN_BOT){el.insertAdjacentHTML('beforeend','<div class="tg-err">Вход через Telegram ещё не настроен — напиши администратору каталога.</div>');return}
+  const sc=document.createElement('script');
+  sc.async=true;
+  sc.src='https://telegram.org/js/telegram-widget.js?22';
+  sc.setAttribute('data-telegram-login',TG_LOGIN_BOT);
+  sc.setAttribute('data-size','large');
+  sc.setAttribute('data-radius','8');
+  sc.setAttribute('data-onauth','onTgAuth(user)');
+  sc.onerror=()=>el.insertAdjacentHTML('beforeend','<div class="tg-err">Не удалось загрузить кнопку Telegram — проверь интернет или блокировщик.</div>');
+  el.appendChild(sc);
+}
+function toggleLogin(){
+  const box=document.getElementById('tglogin');
+  if(box.classList.contains('on')&&!EDIT){box.classList.remove('on');return}
+  tgMsg('<div>Это твои объявления? Войди через Telegram — править можно, только если твой @username совпадает с ником продавца этой страницы.</div><div id="tgw"></div><div class="tg-muted">Мы получаем от Telegram только имя и @username; номер телефона не передаётся.</div>');
+  mountTgWidget(document.getElementById('tgw'));
+}
+// Колбэк Telegram Login Widget: подпись проверяет сервер, он же выдаёт токен сессии
+async function onTgAuth(user){
+  const box=tgMsg('<div>Проверяю вход…</div>');
+  try{
+    const res=await fetch(API_BASE+'/auth/telegram',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(user||{})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok||!j.token){box.innerHTML='<div class="tg-err">'+esc(j.error||'Не удалось войти ('+res.status+')')+'</div>';return}
+    try{localStorage.setItem(SK,JSON.stringify({token:j.token,u:normNick(j.username),exp:j.exp}))}catch(e){box.innerHTML='<div class="tg-err">Браузер не даёт сохранить вход (приватный режим?)</div>';return}
+    if(normNick(j.username)!==normNick(UQ)){
+      box.innerHTML='<div class="tg-err">Ты вошёл как @'+esc(j.username)+', но это страница другого продавца — править её нельзя.</div><div class="tg-muted">Если это твои объявления, а ник в каталоге указан иначе, напиши администратору каталога.</div>';
+      updOwnerUi();return;
+    }
+    box.classList.remove('on');
+    updOwnerUi();render();
+    if(EDIT)renderEditor('');else toast('Вход выполнен — у твоих карточек появилась кнопка «✎ править»');
+  }catch(e){box.innerHTML='<div class="tg-err">Нет связи с сервером — попробуй ещё раз</div>'}
+}
+function logout(){
+  clearSession();
+  if(EDIT&&!ADMIN){location.href=viewHref();return}
+  document.getElementById('tglogin').classList.remove('on');
+  updOwnerUi();render();toast('Ты вышел');
+}
 const qa=s=>esc(s).replace(/"/g,'&quot;');
 // Несохранённые правки строки: язык и новая обложка (blob, или 'reset' — вернуть по умолчанию)
 const PEND={};
@@ -429,8 +541,13 @@ function thumbHtml(r,i){
 }
 function renderEditor(msg){
   const box=document.getElementById('editor');
+  if(!canEdit()){
+    box.innerHTML=`<div class="ed-info">${msg?esc(msg)+'<br>':''}Править эти объявления может только их владелец. Войди через Telegram — аккаунтом с тем же @username, что и ник продавца.</div><div id="tgw-ed"></div>`;
+    mountTgWidget(document.getElementById('tgw-ed'));
+    return;
+  }
   const rows=items.slice().sort((a,b)=>b._d-a._d);
-  box.innerHTML=`<div class="ed-info">${msg?esc(msg)+'<br>':''}Изменения видят все посетители. Пустая цена — как в объявлении; пустое название — как в каталоге; «скрыть» убирает игру из каталога. Обновление у посетителей — до минуты.</div>`+
+  box.innerHTML=`<div class="ed-info">${msg?esc(msg)+'<br>':''}Изменения видят все посетители. Пустая цена — как в объявлении; пустое название — как в каталоге; «продана» оставляет карточку с пометкой «Продано»; «скрыть» убирает игру из каталога. Обновление у посетителей — до минуты.</div>`+
   rows.map(r=>{
     const i=items.indexOf(r),id='e'+i;
     const def=BGG[r.t]?.bgg_url||'';
@@ -458,11 +575,15 @@ function renderEditor(msg){
       </div>
       <div class="ed-checks">
         <label><input type="checkbox" id="${id}-x"${r.x?' checked':''}> ⇄ обмен</label>
+        <label><input type="checkbox" id="${id}-sd"${r._sold?' checked':''}> продана</label>
         <label><input type="checkbox" id="${id}-h"${r._h?' checked':''}> скрыть из каталога</label>
       </div>
       <div class="ed-foot"><button class="ed-save" onclick="saveRow(${i})">Сохранить</button><span class="ed-st" id="${id}-st"></span></div>
     </div>`;
   }).join('');
+  // пришли по «✎ править» с карточки — показать нужную строку
+  const m=location.hash.match(/^#(e\d+)$/),row=m&&document.getElementById(m[1]);
+  if(row){row.classList.add('hl');setTimeout(()=>row.scrollIntoView({block:'center'}),0)}
 }
 function rowSt(i,t,c){const st=document.getElementById('e'+i+'-st');if(st){st.textContent=t;st.className='ed-st'+(c?' '+c:'')}}
 function setRowLang(i,l){
@@ -510,12 +631,12 @@ async function pickFile(i,inp){
 async function pickUrl(i){
   const u=document.getElementById('e'+i+'-iu').value.trim();
   if(!/^https:\/\/\S+$/.test(u)){rowSt(i,'Ссылка на картинку должна начинаться с https://','err');return}
-  const key=getEditKey();if(!key){rowSt(i,'Нужен ключ редактирования','err');return}
+  const key=authToken();if(!key){rowSt(i,ADMIN?'Нужен админский ключ':'Нужно войти через Telegram (кнопка вверху)','err');return}
   rowSt(i,'Скачиваю…');
   try{
     // Сервер скачивает картинку (у чужих сайтов нет CORS) и отдаёт байты для сжатия здесь
     const res=await fetch(API_BASE+'/img/proxy',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({url:u})});
-    if(res.status===401){forgetEditKey();rowSt(i,'Неверный ключ — нажми ещё раз и введи заново','err');return}
+    if(res.status===401||res.status===403){rowSt(i,await authFail(res),'err');return}
     if(!res.ok){const j=await res.json().catch(()=>({}));rowSt(i,j.error||'Не удалось скачать картинку','err');return}
     const b=await shrink(await res.blob());
     setPendImg(i,b,URL.createObjectURL(b));
@@ -536,7 +657,7 @@ async function saveRow(i){
   if(tv.length>120){setSt('Название — не длиннее 120 символов','err');return}
   if(nv.length>200||uv.length>200){setSt('Не длиннее 200 символов','err');return}
   if(uv&&!BGG_RE.test(uv)){setSt('Ссылка BGG должна быть вида https://boardgamegeek.com/boardgame/ID/…','err');return}
-  const def=BGG[r.t]?.bgg_url||'',defId=BGG[r.t]?.bgg_id||null,xv=$('-x').checked,hv=$('-h').checked;
+  const def=BGG[r.t]?.bgg_url||'',defId=BGG[r.t]?.bgg_id||null,xv=$('-x').checked,hv=$('-h').checked,sv=$('-sd').checked;
   const pd=PEND[i]||{};
   const lv=pd.l||r.l;
   const nid=uv?parseBgg(uv):null;
@@ -548,24 +669,25 @@ async function saveRow(i){
     n:nv===(r._b.n||'')?null:nv,
     x:xv===r._b.x?null:xv,
     hidden:hv?true:null,
+    sold:sv?true:null,
     bgg_url:uv===def?null:uv,
     bgg_id:(!uv||nid===defId)?null:nid
   };
-  const key=getEditKey();if(!key){setSt('Нужен ключ редактирования','err');return}
+  const key=authToken();if(!key){setSt(ADMIN?'Нужен админский ключ':'Нужно войти через Telegram (кнопка вверху)','err');return}
   btn.disabled=true;
   try{
     if(pd.img==='reset')patch.img=null;
     else if(pd.img){
       setSt('Загружаю обложку…');
       const up=await fetch(API_BASE+'/img',{method:'POST',headers:{'Content-Type':pd.img.type,'Authorization':'Bearer '+key},body:pd.img});
-      if(up.status===401){forgetEditKey();setSt('Неверный ключ — нажми ещё раз и введи заново','err');return}
+      if(up.status===401||up.status===403){setSt(await authFail(up),'err');return}
       const uj=await up.json().catch(()=>({}));
       if(!up.ok||!uj.url){setSt('Обложка: '+(uj.error||'ошибка '+up.status),'err');return}
       patch.img=uj.url;
     }
     setSt('Сохраняю…');
     const res=await fetch(API_BASE+'/overrides',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({key:r._key,seller:r.s||'',patch})});
-    if(res.status===401){forgetEditKey();setSt('Неверный ключ — нажми ещё раз и введи заново','err');return}
+    if(res.status===401||res.status===403){setSt(await authFail(res),'err');return}
     const j=await res.json().catch(()=>({}));
     if(!res.ok){setSt('Ошибка: '+(j.error||res.status),'err');return}
     if(j.entry)OV[r._key]=j.entry;else delete OV[r._key];
@@ -594,9 +716,10 @@ if(UQ){
   if(EDIT){
     document.body.classList.add('edit-mode');
     document.getElementById('utxt').innerHTML='Правка листингов · <b id="ucnt">'+items.filter(x=>!x._h).length+'</b>';
-    ue.textContent='👁 как видят все';ue.href='?u='+encodeURIComponent(UQ);
+    ue.textContent='👁 как видят все';ue.href=viewHref();
     renderEditor('Загружаю сохранённые правки…');
-  }else{ue.href='?u='+encodeURIComponent(UQ)+'&edit=1'}
+  }else{ue.textContent='✎ править все';ue.href=editHref()}
+  updOwnerUi();
 }
 loadOverrides();
 let lf='',pf='',plf='',df='',xf=false;
@@ -658,6 +781,8 @@ function filtered(){
   else if(so==='expensive')r.sort((a,b)=>(a.p==null)-(b.p==null)||(b.p??0)-(a.p??0));
   else if(so==='rating')r.sort((a,b)=>(bggOf(b)?.rating??0)-(bggOf(a)?.rating??0));
   else r.sort((a,b)=>dispT(a).localeCompare(dispT(b),'ru'));
+  // проданные — в конце списка (sort стабилен)
+  r.sort((a,b)=>(a._sold?1:0)-(b._sold?1:0));
   return r;
 }
 function em(t){let h=0;for(const c of t)h=(h*31+c.charCodeAt(0))%EM.length;return EM[Math.abs(h)]}
@@ -683,6 +808,7 @@ function card(r,idx){
   if(r._img)cov+=`<img class="cov-img" src="${esc(r._img)}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="this.remove()">`;
   else if(cid)cov+=`<img class="cov-img" src="covers/${cid}.webp" data-fb="${esc(b&&b.bgg_id===cid?b.image||'':'')}" alt="" loading="lazy" onload="this.classList.add('ok')" onerror="if(this.dataset.fb){const u=this.dataset.fb;this.removeAttribute('data-fb');this.src=u}else{this.remove()}">`;
   cov+='<div class="cov-grad"></div>';
+  if(r._sold)cov+='<span class="sold-b">Продано</span>';
   let badges='';
   const bp=[];
   if(b?.rating)bp.push(`<span class="rat-b">★ ${b.rating}</span>`);
@@ -698,12 +824,15 @@ function card(r,idx){
   if(mi.length)meta=`<div class="meta-row">${mi.join('')}</div>`;
   let genres='';
   if(b?.categories?.length)genres=`<div class="genres">${b.categories.slice(0,3).map(c=>`<span class="genre">${esc(c)}</span>`).join('')}</div>`;
-  return `<div class="card">
+  // «✎ править» — только владельцу на его странице после входа через Telegram
+  const ed=(UQ&&!EDIT&&canEdit())?`<a class="cedit" href="${editHref(items.indexOf(r))}" onclick="event.stopPropagation()">✎ править</a>`:'';
+  return `<div class="card${r._sold?' sold':''}">
     <div class="cov" onclick="openCard(${idx})" style="cursor:pointer">${cov}${badges}</div>
     <div class="cbody">
       <div class="ctitle">${esc(dispT(r))}</div>
       ${meta}${genres}
       ${r.n?`<div class="note-txt">${esc(r.n)}</div>`:''}
+      ${ed}
       <div class="sell-btn" onclick="showHint(this)" ${r.m?'data-url="https://t.me/used_boardgames_armenia/'+r.m+'"':''} >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
         <span class="sb-txt">${t.sb}</span>
@@ -716,6 +845,7 @@ function card(r,idx){
     <div class="cfoot">
       <span class="price ${pc}">${price}</span>
       <div class="ftags">
+        ${r._sold?`<span class="stag">продано</span>`:''}
         ${r.x?`<span class="xtag">⇄ обмен</span>`:''}
         ${lc?`<span class="ltag ${lc}">${r.l}</span>`:''}
         ${ds?`<span class="dtag">${ds}</span>`:''}
@@ -794,6 +924,7 @@ function openCard(i){
   document.getElementById('modal-meta').innerHTML=meta;
   // tags row
   let tags='';
+  if(r._sold) tags+='<span class="stag" style="font-size:12px">Продано</span>';
   if(r.l==='ENG') tags+='<span class="ltag eng">ENG</span>';
   if(r.l==='РУС') tags+='<span class="ltag rus">РУС</span>';
   if(b?.rating) tags+='<span class="rat-b" style="position:static;font-size:11px">★ '+b.rating+'</span>';
