@@ -284,39 +284,7 @@ function setLang(l){
     b.classList.toggle('active',
       (l==='ru'&&b.textContent==='RU')||(l==='en'&&b.textContent==='EN')||(l==='hy'&&b.textContent==='ՀՅ'));
   });
-  let _rows=[];
-
-const QUOTES={
-  ru:[
-    {t:'Подари кому-то несколько счастливых вечеров — отпусти игру.',s:'Boardex.am'},
-    {t:'За каждой коробкой — чьи-то лучшие часы. Пусть история продолжится.',s:'Boardex.am'},
-    {t:'Игра, которая не играется — просто картон. Верни ей жизнь.',s:'Boardex.am'},
-    {t:'Где-то рядом человек, которому эта игра подарит незабываемый вечер.',s:'Boardex.am'},
-    {t:'Освободи полку — и чьё-то воскресенье станет лучшим в этом году.',s:'Boardex.am'},
-  ],
-  en:[
-    {t:"Gift someone a few happy evenings — let the game go.",s:'Boardex.am'},
-    {t:"Behind every box are someone's best hours. Let the story continue.",s:'Boardex.am'},
-    {t:"A game that isn't played is just cardboard. Give it back its life.",s:'Boardex.am'},
-    {t:'Somewhere nearby is the person this game will make very happy.',s:'Boardex.am'},
-    {t:"Free your shelf — make someone's Sunday the best of the year.",s:'Boardex.am'},
-  ],
-  hy:[
-    {t:'Նվիրի՛ր մեկին մի քանի երջանիկ երեկո — բաց թող խաղը։',s:'Boardex.am'},
-    {t:'Յուրաքանչյուր արկղի հետևում կան ինչ-որ մեկի լավագույն ժամերը։',s:'Boardex.am'},
-    {t:'Չখаղацвац хаghн парзапес ставарататуgh э. Вератарцру кянкн нран.',s:'Boardex.am'},
-    {t:'Воч херву ка март, ум айс хаghn кнвири ан망able Hereko.',s:'Boardex.am'},
-    {t:'Азатир дарака — ev инч-вор меки кирakan кдарна тарва лавагуйнс.',s:'Boardex.am'},
-  ]
-};
-let _qIdx=0;
-function quoteCard(){
-  const q=QUOTES[lang]||QUOTES.ru;
-  const item=q[_qIdx%q.length];
-  _qIdx++;
-  return '<div class="qcard"><div class="qcard-text">'+item.t+'</div><div class="qcard-sub">'+item.s+'</div></div>';
-}
-applyTR();render();
+  applyTR();render();
 }
 function applyTR(){
   const t=TR[lang];
@@ -758,9 +726,9 @@ const QUOTES={
   hy:[
     {t:'Նվիրի՛ր մեկին մի քանի երջանիկ երեկո — բաց թող խաղը։',s:'Boardex.am'},
     {t:'Յուրաքանչյուր արկղի հետևում կան ինչ-որ մեկի լավագույն ժամերը։',s:'Boardex.am'},
-    {t:'Չখаղацвац хаghн парзапес ставарататуgh э. Вератарцру кянкн нран.',s:'Boardex.am'},
-    {t:'Воч херву ка март, ум айс хаghn кнвири ан망able Hereko.',s:'Boardex.am'},
-    {t:'Азатир дарака — ev инч-вор меки кирakan кдарна тарва лавагуйнс.',s:'Boardex.am'},
+    {t:'Խաղը, որը չեն խաղում, պարզապես ստվարաթուղթ է։ Վերադարձրու նրա կյանքը։',s:'Boardex.am'},
+    {t:'Ոչ հեռու կա մարդ, ում այս խաղը կնվիրի անմոռանալի երեկո։',s:'Boardex.am'},
+    {t:'Ազատիր դարակը — և ինչ-որ մեկի կիրակին կդառնա տարվա լավագույնը։',s:'Boardex.am'},
   ]
 };
 let _qIdx=0;

@@ -1,0 +1,3 @@
+# Скрипты добавления игр и обложек (auto_add.py, download_bgg_covers.py, yandex_covers.py)
+curl_cffi>=0.7,<1
+Pillow>=10,<13

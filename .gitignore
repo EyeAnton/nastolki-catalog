@@ -6,3 +6,9 @@ Thumbs.db
 dist/
 node_modules/
 .dev.vars
+.env
+.env.*
+*.token
+.nastolki-token
+.claude/
+.venv/

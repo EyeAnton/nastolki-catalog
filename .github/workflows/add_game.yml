@@ -38,25 +38,42 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
-        run: pip install curl_cffi Pillow
+        run: pip install -r requirements.txt
 
+      # Входные данные — через env, а не подстановкой ${{ }} в скрипт:
+      # кавычка или $( ) в названии/примечании не выполнится как команда.
       - name: Run auto_add.py
+        env:
+          IN_TITLE: ${{ github.event.inputs.title }}
+          IN_PRICE: ${{ github.event.inputs.price || '0' }}
+          IN_LANG: ${{ github.event.inputs.lang }}
+          IN_MSG_ID: ${{ github.event.inputs.msg_id }}
+          IN_SELLER: ${{ github.event.inputs.seller }}
+          IN_NOTE: ${{ github.event.inputs.note }}
+          IN_EXCHANGE: ${{ github.event.inputs.exchange }}
         run: |
+          EXTRA=""
+          if [ "$IN_EXCHANGE" = "true" ]; then EXTRA="--exchange"; fi
           python auto_add.py \
-            --title "${{ github.event.inputs.title }}" \
-            --price "${{ github.event.inputs.price || '0' }}" \
-            --lang "${{ github.event.inputs.lang }}" \
-            --msg_id "${{ github.event.inputs.msg_id }}" \
-            --seller "${{ github.event.inputs.seller }}" \
-            --note "${{ github.event.inputs.note }}" \
-            ${{ github.event.inputs.exchange == 'true' && '--exchange' || '' }}
+            --title "$IN_TITLE" \
+            --price "$IN_PRICE" \
+            --lang "$IN_LANG" \
+            --msg_id "$IN_MSG_ID" \
+            --seller "$IN_SELLER" \
+            --note "$IN_NOTE" \
+            $EXTRA
+
+      - name: Check catalog data
+        run: python -m unittest discover -s tests
 
       - name: Commit changes
+        env:
+          IN_TITLE: ${{ github.event.inputs.title }}
         run: |
           git config user.name "boardex-bot"
           git config user.email "bot@boardex.am"
           git add index.html covers/
-          git diff --staged --quiet || git commit -m "Auto: add/update listing — ${{ github.event.inputs.title }}"
+          git diff --staged --quiet || git commit -m "Auto: add/update listing — $IN_TITLE"
           git push
 
       - name: Install wrangler
